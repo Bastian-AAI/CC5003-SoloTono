@@ -6,7 +6,8 @@
     "target": "esnext",
     "strict": true,
     "skipLibCheck": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "rewriteRelativeImportExtensions": true
   },
   "include": ["src/**/*"]
 }

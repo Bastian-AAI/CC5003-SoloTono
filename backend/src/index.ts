@@ -1,7 +1,7 @@
 import express, { type Request, type Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { initialProducts, type Product } from "./data/productsData.js";
+import { initialProducts, type Product } from "./data/productsData.ts";
 
 dotenv.config();
 
