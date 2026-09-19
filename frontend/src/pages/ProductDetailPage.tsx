@@ -139,10 +139,16 @@ export const ProductDetailPage = () => {
                 component="img"
                 src={product.imageUrl}
                 alt={product.name}
+                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/placeholder-instrument.svg";
+                }}
                 sx={{
                   width: "100%",
                   height: "100%",
-                  objectFit: "cover",
+                  objectFit: "contain",
+                  p: 2,
+                  bgcolor: "#ffffff",
                 }}
               />
             </Box>

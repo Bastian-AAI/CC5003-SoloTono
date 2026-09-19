@@ -43,13 +43,19 @@ export const ProductCard = ({ product }: Props) => {
           component="img"
           image={product.imageUrl}
           alt={product.name}
+          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/placeholder-instrument.svg";
+          }}
           sx={{
             position: "absolute",
             top: 0,
             left: 0,
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            objectFit: "contain",
+            p: 1.5,
+            bgcolor: "#ffffff",
           }}
         />
         <Chip
