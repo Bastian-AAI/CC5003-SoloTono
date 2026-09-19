@@ -1,0 +1,387 @@
+export interface StoreOffer {
+  id: string;
+  storeName: string;
+  storeLogo?: string;
+  priceCash: number;      // Precio efectivo / transferencia
+  priceNormal: number;    // Precio normal / tarjetas
+  inStock: boolean;
+  productUrl: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  brand: string;
+  category: 'Guitarras' | 'Bajos' | 'Teclados y Pianos' | 'Baterías y Percusión' | 'Audio y Grabación';
+  imageUrl: string;
+  description: string;
+  minPrice: number;
+  offers: StoreOffer[];
+}
+
+export const initialProducts: Product[] = [
+  {
+    id: "fender-player-stratocaster",
+    name: "Player Stratocaster Polar White Maple",
+    brand: "Fender",
+    category: "Guitarras",
+    imageUrl: "https://images.unsplash.com/photo-1550985616-10810253b84d?auto=format&fit=crop&w=600&q=80",
+    description: "El sonido inspirador de una Stratocaster es uno de los fundamentos de Fender. Con agudos de campana, medios contundentes y graves robustos, combinados con una articulación nítida.",
+    minPrice: 789990,
+    offers: [
+      {
+        id: "offer-1",
+        storeName: "Audiomusica",
+        priceCash: 789990,
+        priceNormal: 829990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+      {
+        id: "offer-2",
+        storeName: "Casa Amarilla",
+        priceCash: 799990,
+        priceNormal: 839990,
+        inStock: true,
+        productUrl: "https://www.casamarilla.cl",
+      },
+      {
+        id: "offer-3",
+        storeName: "Overdrive",
+        priceCash: 819990,
+        priceNormal: 849990,
+        inStock: false,
+        productUrl: "https://www.overdrive.cl",
+      },
+    ],
+  },
+  {
+    id: "gibson-les-paul-standard-50s",
+    name: "Les Paul Standard 50s Heritage Cherry Sunburst",
+    brand: "Gibson",
+    category: "Guitarras",
+    imageUrl: "https://images.unsplash.com/photo-1525201548112-c7b602038c1a?auto=format&fit=crop&w=600&q=80",
+    description: "Regresa al diseño clásico que hizo legendaria a la Les Paul. Con cuerpo de caoba maciza, tapa de arce figurado y pastillas calibradas Burstbucker 1 y 2.",
+    minPrice: 2490000,
+    offers: [
+      {
+        id: "offer-4",
+        storeName: "Promusic",
+        priceCash: 2490000,
+        priceNormal: 2599990,
+        inStock: true,
+        productUrl: "https://promusic.cl",
+      },
+      {
+        id: "offer-5",
+        storeName: "Audiomusica",
+        priceCash: 2549990,
+        priceNormal: 2649990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+    ],
+  },
+  {
+    id: "yamaha-c40-ii",
+    name: "Guitarra Clásica C40 II Acústica",
+    brand: "Yamaha",
+    category: "Guitarras",
+    imageUrl: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=600&q=80",
+    description: "Una de las guitarras clásicas más vendidas y recomendadas para estudiantes y músicos intermedios por su excelente relación precio-calidad y sonoridad equilibrada.",
+    minPrice: 139990,
+    offers: [
+      {
+        id: "offer-6",
+        storeName: "Casa Amarilla",
+        priceCash: 139990,
+        priceNormal: 149990,
+        inStock: true,
+        productUrl: "https://www.casamarilla.cl",
+      },
+      {
+        id: "offer-7",
+        storeName: "Audiomusica",
+        priceCash: 144990,
+        priceNormal: 154990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+      {
+        id: "offer-8",
+        storeName: "Falabella",
+        priceCash: 149990,
+        priceNormal: 159990,
+        inStock: true,
+        productUrl: "https://www.falabella.com",
+      },
+    ],
+  },
+  {
+    id: "ibanez-grg121dx",
+    name: "Guitarra Eléctrica GIO GRG121DX Walnut Flat",
+    brand: "Ibanez",
+    category: "Guitarras",
+    imageUrl: "https://images.unsplash.com/photo-1564186763535-ebb21ef5277f?auto=format&fit=crop&w=600&q=80",
+    description: "Una guitarra potente y veloz para rock y metal con puente rígido, pastillas IBZ-6 y mástil GRG de arce rápido.",
+    minPrice: 269990,
+    offers: [
+      {
+        id: "offer-9",
+        storeName: "Overdrive",
+        priceCash: 269990,
+        priceNormal: 289990,
+        inStock: true,
+        productUrl: "https://www.overdrive.cl",
+      },
+      {
+        id: "offer-10",
+        storeName: "Audiomusica",
+        priceCash: 279990,
+        priceNormal: 299990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+    ],
+  },
+  {
+    id: "fender-player-jazz-bass",
+    name: "Player Jazz Bass 3-Color Sunburst Pau Ferro",
+    brand: "Fender",
+    category: "Bajos",
+    imageUrl: "https://images.unsplash.com/photo-1520523839898-50712743e9a7?auto=format&fit=crop&w=600&q=80",
+    description: "Con sus dos pastillas single-coil y su suave sensación de tacto, el Player Jazz Bass es un instrumento inspirador con el estilo clásico y versátil que demandan bajistas de todo el mundo.",
+    minPrice: 849990,
+    offers: [
+      {
+        id: "offer-11",
+        storeName: "Audiomusica",
+        priceCash: 849990,
+        priceNormal: 899990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+      {
+        id: "offer-12",
+        storeName: "Casa Amarilla",
+        priceCash: 859990,
+        priceNormal: 909990,
+        inStock: true,
+        productUrl: "https://www.casamarilla.cl",
+      },
+    ],
+  },
+  {
+    id: "sire-marcus-miller-v3",
+    name: "Bajo Eléctrico Marcus Miller V3 2nd Gen 4-String",
+    brand: "Sire",
+    category: "Bajos",
+    imageUrl: "https://images.unsplash.com/photo-1541689592655-f5f52825a3b8?auto=format&fit=crop&w=600&q=80",
+    description: "Creado en colaboración con la leyenda del bajo Marcus Miller. Preamplificador Heritage-3 de 18V activo/pasivo con control de medios paramétrico y gran comodidad.",
+    minPrice: 429990,
+    offers: [
+      {
+        id: "offer-13",
+        storeName: "Overdrive",
+        priceCash: 429990,
+        priceNormal: 459990,
+        inStock: true,
+        productUrl: "https://www.overdrive.cl",
+      },
+      {
+        id: "offer-14",
+        storeName: "Promusic",
+        priceCash: 439990,
+        priceNormal: 469990,
+        inStock: false,
+        productUrl: "https://promusic.cl",
+      },
+    ],
+  },
+  {
+    id: "yamaha-p45-digital-piano",
+    name: "Piano Digital P-45 88 Teclas Contrapesadas",
+    brand: "Yamaha",
+    category: "Teclados y Pianos",
+    imageUrl: "https://images.unsplash.com/photo-1520523839898-50712743e9a7?auto=format&fit=crop&w=600&q=80",
+    description: "El teclado Graded Hammer Standard (GHS) de 88 teclas ofrece una sensación de pulsación realista similar a la de un piano acústico tradicional en un formato compacto y transportable.",
+    minPrice: 519990,
+    offers: [
+      {
+        id: "offer-15",
+        storeName: "Audiomusica",
+        priceCash: 519990,
+        priceNormal: 549990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+      {
+        id: "offer-16",
+        storeName: "Casa Amarilla",
+        priceCash: 529990,
+        priceNormal: 559990,
+        inStock: true,
+        productUrl: "https://www.casamarilla.cl",
+      },
+      {
+        id: "offer-17",
+        storeName: "Falabella",
+        priceCash: 549990,
+        priceNormal: 579990,
+        inStock: true,
+        productUrl: "https://www.falabella.com",
+      },
+    ],
+  },
+  {
+    id: "korg-minilogue-xd",
+    name: "Sintetizador Analógico Polifónico Minilogue XD",
+    brand: "Korg",
+    category: "Teclados y Pianos",
+    imageUrl: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80",
+    description: "Sintetizador analógico de 4 voces con un revolucionario multi-motor digital integrado, secuenciador polifónico por pasos y efectos estéreo con calidad de estudio.",
+    minPrice: 629990,
+    offers: [
+      {
+        id: "offer-18",
+        storeName: "Promusic",
+        priceCash: 629990,
+        priceNormal: 669990,
+        inStock: true,
+        productUrl: "https://promusic.cl",
+      },
+      {
+        id: "offer-19",
+        storeName: "Audiomusica",
+        priceCash: 649990,
+        priceNormal: 689990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+    ],
+  },
+  {
+    id: "roland-td-07kv",
+    name: "Batería Electrónica V-Drums TD-07KV",
+    brand: "Roland",
+    category: "Baterías y Percusión",
+    imageUrl: "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?auto=format&fit=crop&w=600&q=80",
+    description: "El kit V-Drums TD-07KV combina pads con parches de malla de doble capa característicos de Roland con sonidos profesionales y conectividad Bluetooth para practicar sobre música.",
+    minPrice: 949990,
+    offers: [
+      {
+        id: "offer-20",
+        storeName: "Audiomusica",
+        priceCash: 949990,
+        priceNormal: 999990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+      {
+        id: "offer-21",
+        storeName: "Promusic",
+        priceCash: 969990,
+        priceNormal: 1019990,
+        inStock: true,
+        productUrl: "https://promusic.cl",
+      },
+    ],
+  },
+  {
+    id: "pearl-export-exx",
+    name: "Batería Acústica Export EXX 5 Cuerpos Smokey Chrome",
+    brand: "Pearl",
+    category: "Baterías y Percusión",
+    imageUrl: "https://images.unsplash.com/photo-1543791107-c5765796c731?auto=format&fit=crop&w=600&q=80",
+    description: "La serie Pearl Export es la batería más vendida de todos los tiempos. Construida con tecnología SST (Superior Shell Technology) para máxima resonancia y durabilidad.",
+    minPrice: 899990,
+    offers: [
+      {
+        id: "offer-22",
+        storeName: "Casa Amarilla",
+        priceCash: 899990,
+        priceNormal: 949990,
+        inStock: true,
+        productUrl: "https://www.casamarilla.cl",
+      },
+      {
+        id: "offer-23",
+        storeName: "Audiomusica",
+        priceCash: 919990,
+        priceNormal: 969990,
+        inStock: false,
+        productUrl: "https://www.audiomusica.com",
+      },
+    ],
+  },
+  {
+    id: "shure-sm7b",
+    name: "Micrófono Dinámico Vocal SM7B para Estudio y Broadcast",
+    brand: "Shure",
+    category: "Audio y Grabación",
+    imageUrl: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=600&q=80",
+    description: "El estándar de la industria musical y streaming para voces cálidas, suaves y precisas con rechazo electromagnético excepcional.",
+    minPrice: 429990,
+    offers: [
+      {
+        id: "offer-24",
+        storeName: "Promusic",
+        priceCash: 429990,
+        priceNormal: 459990,
+        inStock: true,
+        productUrl: "https://promusic.cl",
+      },
+      {
+        id: "offer-25",
+        storeName: "Audiomusica",
+        priceCash: 439990,
+        priceNormal: 469990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+      {
+        id: "offer-26",
+        storeName: "Overdrive",
+        priceCash: 449990,
+        priceNormal: 479990,
+        inStock: true,
+        productUrl: "https://www.overdrive.cl",
+      },
+    ],
+  },
+  {
+    id: "focusrite-scarlett-2i2-4th-gen",
+    name: "Interfaz de Audio Scarlett 2i2 4th Gen USB",
+    brand: "Focusrite",
+    category: "Audio y Grabación",
+    imageUrl: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80",
+    description: "La interfaz de audio más popular para músicos y productores caseros, ahora con conversores de rango dinámico de 120 dB con calidad de estudio y modo Air rediseñado.",
+    minPrice: 199990,
+    offers: [
+      {
+        id: "offer-27",
+        storeName: "Audiomusica",
+        priceCash: 199990,
+        priceNormal: 219990,
+        inStock: true,
+        productUrl: "https://www.audiomusica.com",
+      },
+      {
+        id: "offer-28",
+        storeName: "Promusic",
+        priceCash: 204990,
+        priceNormal: 224990,
+        inStock: true,
+        productUrl: "https://promusic.cl",
+      },
+      {
+        id: "offer-29",
+        storeName: "Casa Amarilla",
+        priceCash: 209990,
+        priceNormal: 229990,
+        inStock: true,
+        productUrl: "https://www.casamarilla.cl",
+      },
+    ],
+  },
+];
