@@ -9,12 +9,27 @@ import InputBase from "@mui/material/InputBase";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Tooltip from "@mui/material/Tooltip";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import Collapse from "@mui/material/Collapse";
+import Divider from "@mui/material/Divider";
 import { alpha, styled } from "@mui/material/styles";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SearchIcon from "@mui/icons-material/Search";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 import { useThemeMode } from "../context/themeContext";
+import { NAVIGATION_SECTIONS, type NavSection } from "../data/navigationData";
+import { MegaMenu } from "./MegaMenu";
 
 const SearchBox = styled("form")(({ theme }) => ({
   position: "relative",
@@ -26,11 +41,11 @@ const SearchBox = styled("form")(({ theme }) => ({
   marginRight: theme.spacing(2),
   marginLeft: theme.spacing(2),
   width: "100%",
-  maxWidth: 320,
+  maxWidth: 280,
   display: "flex",
   alignItems: "center",
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  [theme.breakpoints.down("sm")]: {
+  [theme.breakpoints.down("md")]: {
     display: "none",
   },
 }));
@@ -56,7 +71,14 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export const Navbar = () => {
   const { mode, toggleColorMode } = useThemeMode();
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeSection, setActiveSection] = useState<NavSection | null>(null);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileExpandedSection, setMobileExpandedSection] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const handleSectionToggle = (section: NavSection) => {
+    setActiveSection((prev) => (prev?.id === section.id ? null : section));
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,114 +89,297 @@ export const Navbar = () => {
     }
   };
 
+  const handleMobileItemClick = (param: string) => {
+    setMobileDrawerOpen(false);
+    navigate(`/catalogo?q=${encodeURIComponent(param)}`);
+  };
+
+  const handleMobileCategoryAllClick = (categoryName: string) => {
+    setMobileDrawerOpen(false);
+    navigate(`/catalogo?category=${encodeURIComponent(categoryName)}`);
+  };
+
   return (
-    <AppBar position="sticky">
-      <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ justifyContent: "space-between", py: 1 }}>
-          {/* Logo & Brand */}
-          <Box
-            component={RouterLink}
-            to="/"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              textDecoration: "none",
-              color: "text.primary",
-              gap: 1,
-            }}
-          >
-            <Box
-              sx={{
-                width: 38,
-                height: 38,
-                borderRadius: "10px",
-                background: "linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#ffffff",
-                boxShadow: "0 4px 10px rgba(255, 111, 0, 0.35)",
-              }}
+    <Box sx={{ position: "sticky", top: 0, zIndex: 1100 }}>
+      <AppBar position="static">
+        <Container maxWidth="lg">
+          <Toolbar disableGutters sx={{ justifyContent: "space-between", py: 1 }}>
+            {/* Botón Hamburger para Móviles */}
+            <IconButton
+              color="inherit"
+              aria-label="abrir menú"
+              edge="start"
+              onClick={() => setMobileDrawerOpen(true)}
+              sx={{ mr: 1, display: { md: "none" } }}
             >
-              <MusicNoteIcon />
-            </Box>
-            <Box>
-              <Typography
-                variant="h6"
-                component="span"
-                sx={{
-                  fontWeight: 800,
-                  fontSize: "1.25rem",
-                  letterSpacing: "-0.5px",
-                }}
-              >
-                Solo<span style={{ color: "#ff6f00" }}>Tono</span>
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  display: "block",
-                  color: "text.secondary",
-                  fontSize: "0.68rem",
-                  lineHeight: 1,
-                  mt: -0.3,
-                }}
-              >
+              <MenuIcon />
+            </IconButton>
 
-                Comparador Musical
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* Buscador de barra rápida */}
-          <SearchBox onSubmit={handleSearchSubmit}>
-            <SearchIconWrapper>
-              <SearchIcon fontSize="small" />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Buscar guitarra, bajo, piano..."
-              inputProps={{ "aria-label": "buscar instrumentos" }}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </SearchBox>
-
-          {/* Links y Switch Modo */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Button
+            {/* Logo & Brand -> Lleva al inicio "/" */}
+            <Box
               component={RouterLink}
               to="/"
-              color="inherit"
-              sx={{ fontWeight: 600, color: "text.primary" }}
+              onClick={() => setActiveSection(null)}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                textDecoration: "none",
+                color: "text.primary",
+                gap: 1,
+                mr: 2,
+              }}
             >
-              Inicio
-            </Button>
-            <Button
-              component={RouterLink}
-              to="/catalogo"
-              variant="text"
-              sx={{ fontWeight: 600, color: "text.primary" }}
-            >
-              Catálogo
-            </Button>
-
-            <Tooltip title={`Cambiar a modo ${mode === "dark" ? "claro" : "oscuro"}`}>
-              <IconButton
-                onClick={toggleColorMode}
-                color="inherit"
-                sx={{ ml: 1 }}
-                aria-label="alternar modo de color"
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: "10px",
+                  background: "linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ffffff",
+                  boxShadow: "0 4px 10px rgba(255, 111, 0, 0.35)",
+                }}
               >
-                {mode === "dark" ? (
-                  <Brightness7Icon sx={{ color: "#ffb74d" }} />
-                ) : (
-                  <Brightness4Icon sx={{ color: "#5c6bc0" }} />
-                )}
-              </IconButton>
-            </Tooltip>
+                <MusicNoteIcon />
+              </Box>
+              <Box>
+                <Typography
+                  variant="h6"
+                  component="span"
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: "1.25rem",
+                    letterSpacing: "-0.5px",
+                  }}
+                >
+                  Solo<span style={{ color: "#ff6f00" }}>Tono</span>
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: "block",
+                    color: "text.secondary",
+                    fontSize: "0.68rem",
+                    lineHeight: 1,
+                    mt: -0.3,
+                  }}
+                >
+                  Comparador Musical
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Secciones Principales en Desktop: Instrumentos, Piezas y Repuestos, Equipos de sonido */}
+            <Box
+              sx={{
+                display: { xs: "none", md: "flex" },
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              {NAVIGATION_SECTIONS.map((sec) => {
+                const isOpen = activeSection?.id === sec.id;
+
+                return (
+                  <Button
+                    key={sec.id}
+                    onClick={() => handleSectionToggle(sec)}
+                    color="inherit"
+                    endIcon={
+                      isOpen ? (
+                        <KeyboardArrowUpIcon sx={{ color: "primary.main" }} />
+                      ) : (
+                        <KeyboardArrowDownIcon />
+                      )
+                    }
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: "0.92rem",
+                      px: 2,
+                      py: 1,
+                      color: isOpen ? "primary.main" : "text.primary",
+                      bgcolor: isOpen ? "action.hover" : "transparent",
+                      borderRadius: 2,
+                      transition: "all 0.15s ease",
+                      "&:hover": {
+                        bgcolor: "action.hover",
+                        color: "primary.main",
+                      },
+                    }}
+                  >
+                    {sec.title}
+                  </Button>
+                );
+              })}
+            </Box>
+
+            {/* Buscador de barra rápida */}
+            <SearchBox onSubmit={handleSearchSubmit}>
+              <SearchIconWrapper>
+                <SearchIcon fontSize="small" />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Buscar instrumento, pastilla, micrófono..."
+                inputProps={{ "aria-label": "buscar en catálogo" }}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </SearchBox>
+
+            {/* Toggle Modo Oscuro / Claro */}
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Tooltip title={`Cambiar a modo ${mode === "dark" ? "claro" : "oscuro"}`}>
+                <IconButton
+                  onClick={toggleColorMode}
+                  color="inherit"
+                  aria-label="alternar modo de color"
+                >
+                  {mode === "dark" ? (
+                    <Brightness7Icon sx={{ color: "#ffb74d" }} />
+                  ) : (
+                    <Brightness4Icon sx={{ color: "#5c6bc0" }} />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      {/* Mega Menú desplegable para Desktop */}
+      <MegaMenu
+        section={activeSection}
+        onClose={() => setActiveSection(null)}
+      />
+
+      {/* Drawer para Móviles / Tablets */}
+      <Drawer
+        anchor="left"
+        open={mobileDrawerOpen}
+        onClose={() => setMobileDrawerOpen(false)}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: 310,
+            p: 2,
+            boxSizing: "border-box",
+          },
+        }}
+      >
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <MusicNoteIcon sx={{ color: "primary.main" }} />
+            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+              Solo<span style={{ color: "#ff6f00" }}>Tono</span>
+            </Typography>
           </Box>
-        </Toolbar>
-      </Container>
-    </AppBar>
+          <IconButton onClick={() => setMobileDrawerOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Buscador en Drawer Móvil */}
+        <Box component="form" onSubmit={handleSearchSubmit} sx={{ mb: 2 }}>
+          <StyledInputBase
+            placeholder="Buscar en catálogo..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{
+              border: 1,
+              borderColor: "divider",
+              borderRadius: 2,
+              px: 1.5,
+              py: 0.5,
+              width: "100%",
+            }}
+          />
+        </Box>
+
+        <List disablePadding>
+          {NAVIGATION_SECTIONS.map((sec) => {
+            const isExpanded = mobileExpandedSection === sec.id;
+
+            return (
+              <Box key={sec.id} sx={{ mb: 1 }}>
+                <ListItemButton
+                  onClick={() =>
+                    setMobileExpandedSection(isExpanded ? null : sec.id)
+                  }
+                  sx={{ borderRadius: 2 }}
+                >
+                  <ListItemText
+                    primary={
+                      <Typography sx={{ fontWeight: 700, fontSize: "0.95rem" }}>
+                        {sec.title}
+                      </Typography>
+                    }
+                  />
+                  {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                </ListItemButton>
+
+                <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding sx={{ pl: 2 }}>
+                    {sec.columns.map((col) => (
+                      <Box key={col.categoryName} sx={{ my: 1.5 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ fontWeight: 700, color: "text.primary", display: "block" }}
+                        >
+                          {col.categoryName}
+                        </Typography>
+                        {col.items.map((item) => (
+                          <ListItem key={item.title} disablePadding sx={{ py: 0.3 }}>
+                            <ListItemButton
+                              onClick={() => handleMobileItemClick(item.queryParam)}
+                              sx={{ py: 0.4, px: 1, borderRadius: 1 }}
+                            >
+                              <ListItemText
+                                primary={
+                                  <Typography
+                                    sx={{
+                                      fontSize: "0.82rem",
+                                      color: "text.secondary",
+                                    }}
+                                  >
+                                    {item.title}
+                                  </Typography>
+                                }
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                        ))}
+                        <ListItem disablePadding sx={{ py: 0.3 }}>
+                          <ListItemButton
+                            onClick={() => handleMobileCategoryAllClick(col.allQueryParam)}
+                            sx={{ py: 0.4, px: 1, borderRadius: 1 }}
+                          >
+                            <ListItemText
+                              primary={
+                                <Typography
+                                  sx={{
+                                    fontSize: "0.82rem",
+                                    color: "primary.main",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  Ver todos
+                                </Typography>
+                              }
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                      </Box>
+                    ))}
+                  </List>
+                </Collapse>
+              </Box>
+            );
+          })}
+        </List>
+      </Drawer>
+    </Box>
   );
 };

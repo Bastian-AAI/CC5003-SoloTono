@@ -43,11 +43,23 @@ app.get("/api/stores", (_req: Request, res: Response) => {
 // GET /api/products - Listado con filtros y búsqueda
 app.get("/api/products", (req: Request, res: Response) => {
   let products: Product[] = [...initialProducts];
-  const { category, store, q, sort } = req.query;
+  const { category, section, store, q, sort } = req.query;
 
-  // Filtrado por categoría
+  // Filtrado por sección (Instrumentos, Piezas y Repuestos, Equipos de sonido)
+  if (typeof section === "string" && section.trim() !== "" && section !== "Todas") {
+    products = products.filter(
+      (p) => p.section?.toLowerCase() === section.toLowerCase()
+    );
+  }
+
+  // Filtrado por categoría o subcategoría (ej: Cuerda, Aire, Percusión, etc.)
   if (typeof category === "string" && category.trim() !== "" && category !== "Todas") {
-    products = products.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+    const catLower = category.toLowerCase();
+    products = products.filter(
+      (p) =>
+        p.category.toLowerCase() === catLower ||
+        p.subCategory?.toLowerCase() === catLower
+    );
   }
 
   // Filtrado por tienda disponible
@@ -57,11 +69,11 @@ app.get("/api/products", (req: Request, res: Response) => {
     );
   }
 
-  // Búsqueda por texto (nombre, marca o descripción)
+  // Búsqueda por texto (nombre, marca, categoría, subcategoría, sección o descripción)
   if (typeof q === "string" && q.trim() !== "") {
     const searchTerms = q.toLowerCase().split(" ").filter(Boolean);
     products = products.filter((p) => {
-      const targetText = `${p.name} ${p.brand} ${p.category} ${p.description}`.toLowerCase();
+      const targetText = `${p.name} ${p.brand} ${p.category} ${p.subCategory || ""} ${p.section || ""} ${p.description}`.toLowerCase();
       return searchTerms.every((term) => targetText.includes(term));
     });
   }

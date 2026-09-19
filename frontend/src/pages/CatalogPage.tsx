@@ -36,6 +36,7 @@ export const CatalogPage = () => {
 
   // Valores de filtros sincronizados con URL Search Params
   const queryParam = searchParams.get("q") || "";
+  const sectionParam = searchParams.get("section") || "";
   const categoryParam = searchParams.get("category") || "Todas";
   const storeParam = searchParams.get("store") || "Todas";
   const sortParam = searchParams.get("sort") || "price_asc";
@@ -56,6 +57,7 @@ export const CatalogPage = () => {
     productService
       .getProducts({
         q: queryParam,
+        section: sectionParam,
         category: categoryParam,
         store: storeParam,
         sort: sortParam,
@@ -70,7 +72,7 @@ export const CatalogPage = () => {
     return () => {
       ignore = true;
     };
-  }, [queryParam, categoryParam, storeParam, sortParam]);
+  }, [queryParam, sectionParam, categoryParam, storeParam, sortParam]);
 
   // Manejadores de actualización de filtros en la URL
   const updateFilter = (key: string, value: string) => {
@@ -104,8 +106,13 @@ export const CatalogPage = () => {
   };
 
   const hasActiveFilters = useMemo(() => {
-    return Boolean(queryParam || (categoryParam && categoryParam !== "Todas") || (storeParam && storeParam !== "Todas"));
-  }, [queryParam, categoryParam, storeParam]);
+    return Boolean(
+      queryParam ||
+      sectionParam ||
+      (categoryParam && categoryParam !== "Todas") ||
+      (storeParam && storeParam !== "Todas")
+    );
+  }, [queryParam, sectionParam, categoryParam, storeParam]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, minHeight: "75vh" }}>
@@ -232,6 +239,15 @@ export const CatalogPage = () => {
                     Filtros aplicados:
                   </Typography>
                   <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
+                    {sectionParam && (
+                      <Chip
+                        label={`Sección: ${sectionParam}`}
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                        onDelete={() => updateFilter("section", "")}
+                      />
+                    )}
                     {categoryParam !== "Todas" && (
                       <Chip
                         label={categoryParam}

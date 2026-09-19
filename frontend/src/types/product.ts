@@ -8,19 +8,13 @@ export interface StoreOffer {
   productUrl: string;
 }
 
-export type ProductCategory = 
-  | 'Guitarras' 
-  | 'Bajos' 
-  | 'Teclados y Pianos' 
-  | 'Baterías y Percusión' 
-  | 'Audio y Grabación'
-  | string;
-
 export interface Product {
   id: string;
   name: string;
   brand: string;
-  category: ProductCategory;
+  category: string;
+  section?: 'Instrumentos' | 'Piezas y Repuestos' | 'Equipos de sonido' | string;
+  subCategory?: string;
   imageUrl: string;
   description: string;
   minPrice: number;
@@ -29,6 +23,7 @@ export interface Product {
 
 export interface ProductFilterParams {
   category?: string;
+  section?: string;
   store?: string;
   q?: string;
   sort?: 'price_asc' | 'price_desc' | 'name_asc' | string;
