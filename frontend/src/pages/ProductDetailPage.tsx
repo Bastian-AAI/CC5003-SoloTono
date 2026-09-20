@@ -26,9 +26,11 @@ export const ProductDetailPage = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     if (!id) return;
+    setImgError(false);
     let ignore = false;
 
     productService
@@ -137,12 +139,9 @@ export const ProductDetailPage = () => {
             >
               <Box
                 component="img"
-                src={product.imageUrl}
+                src={imgError ? "/placeholder-instrument.svg" : product.imageUrl}
                 alt={product.name}
-                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/placeholder-instrument.svg";
-                }}
+                onError={() => setImgError(true)}
                 sx={{
                   width: "100%",
                   height: "100%",

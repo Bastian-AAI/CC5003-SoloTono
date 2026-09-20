@@ -21,6 +21,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import CategoryIcon from "@mui/icons-material/Category";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ToggleButton from "@mui/material/ToggleButton";
+import GridViewIcon from "@mui/icons-material/GridView";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { productService } from "../services/products";
 import type { Product } from "../types/product";
 import { ProductCard } from "../components/ProductCard";
@@ -33,6 +40,10 @@ export const CatalogPage = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [stores, setStores] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Estados de interacción local (Cambio de vista y Filtro reactivo de stock)
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [onlyInStock, setOnlyInStock] = useState(false);
 
   // Valores de filtros sincronizados con URL Search Params
   const queryParam = searchParams.get("q") || "";
@@ -102,17 +113,25 @@ export const CatalogPage = () => {
   };
 
   const handleResetFilters = () => {
+    setOnlyInStock(false);
     setSearchParams(new URLSearchParams());
   };
+
+  // Filtrado reactivo en cliente con estado local useState
+  const displayedProducts = useMemo(() => {
+    if (!onlyInStock) return products;
+    return products.filter((p) => p.offers.some((o) => o.inStock));
+  }, [products, onlyInStock]);
 
   const hasActiveFilters = useMemo(() => {
     return Boolean(
       queryParam ||
       sectionParam ||
+      onlyInStock ||
       (categoryParam && categoryParam !== "Todas") ||
       (storeParam && storeParam !== "Todas")
     );
-  }, [queryParam, sectionParam, categoryParam, storeParam]);
+  }, [queryParam, sectionParam, categoryParam, storeParam, onlyInStock]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, minHeight: "75vh" }}>
@@ -232,6 +251,29 @@ export const CatalogPage = () => {
                 </Select>
               </FormControl>
 
+              <Divider />
+
+              {/* Filtro interactivo con estado local: Solo en stock */}
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={onlyInStock}
+                    onChange={(e) => setOnlyInStock(e.target.checked)}
+                    color="primary"
+                    size="small"
+                  />
+                }
+                label={
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+                    <CheckCircleIcon fontSize="small" color={onlyInStock ? "primary" : "action"} />
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      Solo con stock
+                    </Typography>
+                  </Box>
+                }
+                sx={{ m: 0 }}
+              />
+
               {/* Badges de filtros activos */}
               {hasActiveFilters && (
                 <Box sx={{ pt: 1 }}>
@@ -239,6 +281,15 @@ export const CatalogPage = () => {
                     Filtros aplicados:
                   </Typography>
                   <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
+                    {onlyInStock && (
+                      <Chip
+                        label="Solo con stock"
+                        color="success"
+                        variant="outlined"
+                        size="small"
+                        onDelete={() => setOnlyInStock(false)}
+                      />
+                    )}
                     {sectionParam && (
                       <Chip
                         label={`Sección: ${sectionParam}`}
@@ -294,20 +345,40 @@ export const CatalogPage = () => {
             }}
           >
             <Typography variant="subtitle2" color="text.secondary">
-              Mostrando <strong>{products.length}</strong> instrumentos
+              Mostrando <strong>{displayedProducts.length}</strong> de {products.length} instrumentos
             </Typography>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography variant="caption" color="text.secondary">
-                Ordenar por:
-              </Typography>
-              <FormControl size="small" sx={{ minWidth: 180 }}>
-                <Select value={sortParam} onChange={handleSortChange}>
-                  <MenuItem value="price_asc">Menor precio primero</MenuItem>
-                  <MenuItem value="price_desc">Mayor precio primero</MenuItem>
-                  <MenuItem value="name_asc">Nombre (A-Z)</MenuItem>
-                </Select>
-              </FormControl>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+              {/* Selector interactivo de vista Grid / List con estado local */}
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(_, newMode: "grid" | "list" | null) => {
+                  if (newMode) setViewMode(newMode);
+                }}
+                size="small"
+                aria-label="modo de vista"
+              >
+                <ToggleButton value="grid" aria-label="vista en cuadrícula">
+                  <GridViewIcon fontSize="small" />
+                </ToggleButton>
+                <ToggleButton value="list" aria-label="vista en lista">
+                  <ViewListIcon fontSize="small" />
+                </ToggleButton>
+              </ToggleButtonGroup>
+
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography variant="caption" color="text.secondary">
+                  Ordenar por:
+                </Typography>
+                <FormControl size="small" sx={{ minWidth: 180 }}>
+                  <Select value={sortParam} onChange={handleSortChange}>
+                    <MenuItem value="price_asc">Menor precio primero</MenuItem>
+                    <MenuItem value="price_desc">Mayor precio primero</MenuItem>
+                    <MenuItem value="name_asc">Nombre (A-Z)</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
             </Box>
           </Paper>
 
@@ -316,7 +387,7 @@ export const CatalogPage = () => {
             <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
               <CircularProgress color="primary" />
             </Box>
-          ) : products.length === 0 ? (
+          ) : displayedProducts.length === 0 ? (
             <Paper
               variant="outlined"
               sx={{
@@ -343,8 +414,15 @@ export const CatalogPage = () => {
             </Paper>
           ) : (
             <Grid container spacing={3}>
-              {products.map((product) => (
-                <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
+              {displayedProducts.map((product) => (
+                <Grid
+                  key={product.id}
+                  size={{
+                    xs: 12,
+                    sm: viewMode === "grid" ? 6 : 12,
+                    md: viewMode === "grid" ? 4 : 12,
+                  }}
+                >
                   <ProductCard product={product} />
                 </Grid>
               ))}

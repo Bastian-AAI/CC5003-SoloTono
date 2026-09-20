@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
@@ -18,6 +19,7 @@ interface Props {
 
 export const ProductCard = ({ product }: Props) => {
   const navigate = useNavigate();
+  const [imgError, setImgError] = useState(false);
 
   const handleGoToDetail = () => {
     navigate(`/producto/${product.id}`);
@@ -41,12 +43,9 @@ export const ProductCard = ({ product }: Props) => {
       <Box sx={{ position: "relative", pt: "70%", backgroundColor: "action.hover" }}>
         <CardMedia
           component="img"
-          image={product.imageUrl}
+          image={imgError ? "/placeholder-instrument.svg" : product.imageUrl}
           alt={product.name}
-          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "/placeholder-instrument.svg";
-          }}
+          onError={() => setImgError(true)}
           sx={{
             position: "absolute",
             top: 0,
