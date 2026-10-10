@@ -27,9 +27,13 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import LoginIcon from "@mui/icons-material/Login";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import { useAuth } from "../hooks/useAuth";
 import { useThemeMode } from "../context/themeContext";
 import { NAVIGATION_SECTIONS, type NavSection } from "../data/navigationData";
 import { MegaMenu } from "./MegaMenu";
+import { PersonAdd } from "@mui/icons-material";
 
 const SearchBox = styled("form")(({ theme }) => ({
   position: "relative",
@@ -70,6 +74,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export const Navbar = () => {
   const { mode, toggleColorMode } = useThemeMode();
+  const { user, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeSection, setActiveSection] = useState<NavSection | null>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -243,6 +248,44 @@ export const Navbar = () => {
                   )}
                 </IconButton>
               </Tooltip>
+              {user ? (
+                <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", gap: 1.5, ml: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  Hola, {user.name || user.username}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={logout}
+                  sx={{ fontWeight: 600 }}
+                >
+                  Cerrar Sesión
+                </Button>
+              </Box>
+              ) : (
+                <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 1, ml: 1}}>
+                <Button
+                  component={RouterLink}
+                  to="/login"
+                  variant="text"
+                  color="inherit"
+                  sx= {{ fontWeight: 600 }}
+                >
+                  Ingresar
+                  </Button>
+                  <Button
+                    component={RouterLink}
+                    to="/register"
+                    variant="contained"
+                    sx={{ fontWeight: 700,
+                          bgcolor: "#ff6f00",
+                          "&:hover": { bgcolor: "#e66400" }
+                     }}
+                     >
+                      Registrarse
+                     </Button>
+              </Box>
+              )}
             </Box>
           </Toolbar>
         </Container>
@@ -297,6 +340,53 @@ export const Navbar = () => {
             }}
           />
         </Box>
+
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb:2 }}>
+          {user ? (
+            <>
+            <Typography variant="body2" sx={{ fontWeight: 600, px: 1, py: 0.5 }}>
+              Conectado como: {user.name || user.username}
+            </Typography>
+            <Button
+              variant="outlined"
+              color="error"
+              fullWidth
+              onClick={() => {
+                logout();
+                setMobileDrawerOpen(false);
+              }}
+            >
+              Cerrar Sesión
+            </Button>
+          </>
+          ): (
+            <>
+            <Button
+              component={RouterLink}
+              to="/login"
+              variant="outlined"
+              fullWidth
+              startIcon={<LoginIcon />}
+              onClick={() => setMobileDrawerOpen(false)}
+            >
+              Iniciar Sesión
+            </Button>
+            <Button 
+              component={RouterLink}
+              to="/register"
+              variant="contained"
+              fullWidth
+              startIcon={<PersonAddIcon />}
+              onClick={() => setMobileDrawerOpen(false)}
+              sx={{ bgcolor: "#ff6f00", "&:hover": { bgcolor: "#e66400" } }}
+            >
+              Crear Cuenta
+            </Button>
+            </>
+          )}
+        </Box>
+
+        <Divider sx={{ mb: 2 }} />
 
         <List disablePadding>
           {NAVIGATION_SECTIONS.map((sec) => {

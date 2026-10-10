@@ -6,10 +6,14 @@ import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/HomePage";
 import { CatalogPage } from "./pages/CatalogPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
+import { LoginPage, RegisterPage } from './pages/AuthPages'
+import { AuthProvider } from './context/AuthProvider'
+
 
 function App() {
   return (
     <ThemeModeProvider>
+      <AuthProvider>
       <BrowserRouter>
         <Box
           sx={{
@@ -28,12 +32,15 @@ function App() {
               <Route path="/catalogo" element={<CatalogPage />} />
               <Route path="/producto/:id" element={<ProductDetailPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
             </Routes>
           </Box>
 
           <Footer />
         </Box>
       </BrowserRouter>
+      </AuthProvider>
     </ThemeModeProvider>
   );
 }

@@ -7,7 +7,9 @@
     "strict": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "rewriteRelativeImportExtensions": true
+    "rewriteRelativeImportExtensions": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
   },
   "include": ["src/**/*"]
 }
