@@ -33,7 +33,6 @@ import { useAuth } from "../hooks/useAuth";
 import { useThemeMode } from "../context/themeContext";
 import { NAVIGATION_SECTIONS, type NavSection } from "../data/navigationData";
 import { MegaMenu } from "./MegaMenu";
-import { PersonAdd } from "@mui/icons-material";
 
 const SearchBox = styled("form")(({ theme }) => ({
   position: "relative",

@@ -4,7 +4,7 @@
   "description": "API REST de SoloTono Instrumentos (Express + Mongoose + JWT en cookie httpOnly)",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "node --watch src/index.ts",
+    "dev": "node --experimental-strip-types --watch src/index.ts",
     "build": "tsc",
     "start": "NODE_ENV=production node out/index.js",
     "seed": "node src/seed.ts",
