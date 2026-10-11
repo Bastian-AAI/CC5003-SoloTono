@@ -3,20 +3,19 @@ import { useParams, Link as RouterLink, useNavigate } from "react-router-dom";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
+import { alpha } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import { productService } from "../services/products";
 import type { Product } from "../types/product";
-import { StoreOffersTable } from "../components/StoreOffersTable";
+import { StoreOffersList } from "../components/StoreOffersList";
 import { formatPriceCLP } from "../utils/format";
 
 export const ProductDetailPage = () => {
@@ -81,164 +80,254 @@ export const ProductDetailPage = () => {
 
   const inStockStores = product.offers.filter((o) => o.inStock);
 
+  // Características que se muestran como lista "etiqueta: valor" (como en SoloTodo)
+  const specs: { label: string; value: string }[] = [
+    { label: "Marca", value: product.brand },
+    { label: "Categoría", value: product.category },
+    ...(product.section ? [{ label: "Sección", value: product.section }] : []),
+    ...(product.subCategory
+      ? [{ label: "Subcategoría", value: product.subCategory }]
+      : []),
+  ];
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4, minHeight: "80vh" }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-        <Link component={RouterLink} to="/" underline="hover" color="inherit">
-          Inicio
-        </Link>
-        <Link component={RouterLink} to="/catalogo" underline="hover" color="inherit">
-          Catálogo
-        </Link>
-        <Link
-          component={RouterLink}
-          to={`/catalogo?category=${encodeURIComponent(product.category)}`}
-          underline="hover"
-          color="inherit"
+    <Container
+      maxWidth="lg"
+      sx={{ py: { xs: 1.5, md: 2 }, px: { xs: 1.5, sm: 2, md: 3 } }}
+    >
+      {/* Volver + Breadcrumbs en una sola fila para ahorrar altura */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1.5 }}>
+        <IconButton
+          aria-label="Volver"
+          size="small"
+          onClick={() => navigate(-1)}
+          sx={{ color: "text.secondary" }}
         >
-          {product.category}
-        </Link>
-        <Typography color="text.primary" sx={{ fontWeight: 600 }}>
-          {product.name}
-        </Typography>
-      </Breadcrumbs>
+          <ArrowBackIcon fontSize="small" />
+        </IconButton>
+        <Breadcrumbs
+          aria-label="breadcrumb"
+          sx={{ fontSize: "0.85rem", minWidth: 0 }}
+        >
+          <Link component={RouterLink} to="/" underline="hover" color="inherit">
+            Inicio
+          </Link>
+          <Link component={RouterLink} to="/catalogo" underline="hover" color="inherit">
+            Catálogo
+          </Link>
+          <Link
+            component={RouterLink}
+            to={`/catalogo?category=${encodeURIComponent(product.category)}`}
+            underline="hover"
+            color="inherit"
+          >
+            {product.category}
+          </Link>
+          <Typography
+            color="text.primary"
+            noWrap
+            sx={{
+              fontWeight: 600,
+              fontSize: "inherit",
+              maxWidth: { xs: 140, sm: 320, md: 480 },
+            }}
+          >
+            {product.name}
+          </Typography>
+        </Breadcrumbs>
+      </Box>
 
-      {/* Botón Volver */}
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate(-1)}
-        sx={{ mb: 3, color: "text.secondary" }}
-        size="small"
-      >
-        Volver
-      </Button>
-
-      {/* Ficha Principal del Instrumento */}
-      <Paper
-        variant="outlined"
+      {/*
+        Grilla principal. Se reorganiza según el ancho de la ventana:
+          lg+  : [ imagen | nombre + mejor precio | ofertas ]
+                 [ imagen | descripción + caract. | ofertas ]
+          md   : [ imagen | descripción + caract. | ofertas ]
+                 [ nombre + mejor precio (2 cols) | ofertas ]
+          sm   : [ imagen | nombre + mejor precio ]
+                 [ imagen | descripción + caract. ]
+                 [ ofertas (2 columnas)            ]
+          xs   : una sola columna
+      */}
+      <Box
         sx={{
-          p: { xs: 3, md: 5 },
-          borderRadius: 4,
-          borderColor: "divider",
-          mb: 5,
+          display: "grid",
+          alignItems: "start",
+          columnGap: { xs: 1.5, md: 2.5 },
+          rowGap: { xs: 1.5, md: 2, lg: 1.5 },
+          gridTemplateColumns: {
+            xs: "minmax(0, 1fr)",
+            sm: "minmax(160px, 220px) minmax(0, 1fr)",
+            md: "220px minmax(0, 1fr) 340px",
+            lg: "280px minmax(0, 1fr) 380px",
+          },
+          // La fila "1fr" absorbe el espacio sobrante para que el contenido
+          // quede pegado arriba y no se separe cuando la imagen es más alta.
+          gridTemplateRows: {
+            sm: "auto 1fr auto",
+            md: "auto 1fr",
+            lg: "auto 1fr",
+          },
+          gridTemplateAreas: {
+            xs: '"image" "title" "desc" "offers"',
+            sm: '"image title" "image desc" "offers offers"',
+            md: '"image desc offers" "title title offers"',
+            lg: '"image title offers" "image desc offers"',
+          },
         }}
       >
-        <Grid container spacing={5} sx={{ alignItems: "center" }}>
-          {/* Imagen del Instrumento */}
-          <Grid size={{ xs: 12, md: 5 }}>
-            <Box
-              sx={{
-                width: "100%",
-                height: 380,
-                borderRadius: 3,
-                overflow: "hidden",
-                bgcolor: "action.hover",
-                position: "relative",
-              }}
-            >
-              <Box
-                component="img"
-                src={imgError ? "/placeholder-instrument.svg" : product.imageUrl}
-                alt={product.name}
-                onError={() => setImgError(true)}
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                  p: 2,
-                  bgcolor: "#ffffff",
-                }}
-              />
-            </Box>
-          </Grid>
+        {/* Imagen del instrumento */}
+        <Box
+          sx={{
+            gridArea: "image",
+            width: "100%",
+            aspectRatio: { xs: "16 / 10", sm: "1 / 1" },
+            maxHeight: { xs: 220, sm: "none" },
+            borderRadius: "12px",
+            overflow: "hidden",
+            bgcolor: "#ffffff",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Box
+            component="img"
+            src={imgError ? "/placeholder-instrument.svg" : product.imageUrl}
+            alt={product.name}
+            onError={() => setImgError(true)}
+            sx={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              p: 1.5,
+            }}
+          />
+        </Box>
 
-          {/* Información y Precio Mínimo */}
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
-              <Chip
-                label={product.brand}
-                color="primary"
-                variant="outlined"
-                size="small"
-                sx={{ fontWeight: 700 }}
-              />
-              <Chip label={product.category} size="small" />
-            </Stack>
+        {/* Nombre y mejor precio */}
+        <Box sx={{ gridArea: "title", minWidth: 0 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              fontWeight: 800,
+              lineHeight: 1.2,
+              fontSize: { xs: "1.3rem", md: "1.55rem" },
+              mb: 1,
+            }}
+          >
+            {product.name}
+          </Typography>
 
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{
-                fontWeight: 800,
-                lineHeight: 1.2,
-                mb: 2,
-              }}
-            >
-              {product.name}
-            </Typography>
-
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{ mb: 3, lineHeight: 1.6 }}
-            >
-              {product.description}
-            </Typography>
-
-            <Paper
-              variant="outlined"
-              sx={{
-                p: 2.5,
-                borderRadius: 3,
-                bgcolor: (theme) =>
-                  theme.palette.mode === "dark"
-                    ? "rgba(255, 111, 0, 0.06)"
-                    : "rgba(255, 111, 0, 0.04)",
-                borderColor: "primary.main",
-              }}
-            >
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+          {/* Mejor precio, compacto */}
+          <Paper
+            variant="outlined"
+            sx={(theme) => ({
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              columnGap: 2,
+              rowGap: 0.25,
+              px: 1.5,
+              py: 1,
+              borderRadius: "10px",
+              borderColor: "primary.main",
+              bgcolor: alpha(theme.palette.primary.main, 0.07),
+            })}
+          >
+            <Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", lineHeight: 1.2 }}
+              >
                 Mejor precio encontrado
               </Typography>
               <Typography
-                variant="h3"
                 component="div"
                 sx={{
+                  fontSize: { xs: "1.6rem", md: "1.9rem" },
                   fontWeight: 900,
+                  lineHeight: 1.2,
                   color: "primary.main",
-                  letterSpacing: "-1px",
-                  my: 0.5,
+                  letterSpacing: "-0.5px",
                 }}
               >
                 {formatPriceCLP(product.minPrice)}
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <StorefrontIcon fontSize="small" sx={{ color: "text.secondary" }} />
-                <Typography variant="body2" color="text.secondary">
-                  Disponible en {product.offers.length} tiendas (
-                  <strong>{inStockStores.length} con stock inmediato</strong>)
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Paper>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <StorefrontIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+              <Typography variant="body2" color="text.secondary">
+                En {product.offers.length} tiendas (
+                <strong>{inStockStores.length} con stock</strong>)
+              </Typography>
+            </Box>
+          </Paper>
 
-      {/* Sección Comparativa de Precios por Tienda */}
-      <Box sx={{ mb: 6 }}>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 800 }}>
-            Comparativa de Ofertas por Tienda
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Compara precios de contado/transferencia frente a pagos con tarjetas y revisa la
-            disponibilidad de stock antes de comprar.
-          </Typography>
         </Box>
 
-        {/* Tabla de tiendas */}
-        <StoreOffersTable offers={product.offers} />
+        {/* Descripción y características */}
+        <Box sx={{ gridArea: "desc", minWidth: 0 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 1.5, lineHeight: 1.55 }}
+          >
+            {product.description}
+          </Typography>
+
+          {/* Características */}
+          <Typography
+            variant="subtitle1"
+            component="h2"
+            sx={{ fontWeight: 800, color: "primary.main", mb: 0.5 }}
+          >
+            Características
+          </Typography>
+          <Box
+            component="dl"
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "max-content minmax(0, 1fr)",
+              columnGap: 1.5,
+              rowGap: 0.5,
+              m: 0,
+            }}
+          >
+            {specs.map((spec) => (
+              <Box key={spec.label} sx={{ display: "contents" }}>
+                <Typography
+                  component="dt"
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontWeight: 700 }}
+                >
+                  {spec.label}
+                </Typography>
+                <Typography component="dd" variant="body2" sx={{ m: 0 }}>
+                  {spec.value}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
+        {/* Ofertas por tienda: queda junto a la imagen, sin tener que scrollear */}
+        <Box
+          sx={{
+            gridArea: "offers",
+            minWidth: 0,
+            // En md+ el panel queda fijo a la vista y scrollea por dentro
+            // si hay muchas tiendas.
+            position: { md: "sticky" },
+            top: { md: 16 },
+            maxHeight: { md: "calc(100vh - 32px)" },
+            overflowY: { md: "auto" },
+          }}
+        >
+          <StoreOffersList offers={product.offers} />
+        </Box>
       </Box>
     </Container>
   );

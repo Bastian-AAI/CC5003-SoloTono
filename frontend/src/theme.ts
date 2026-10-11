@@ -105,6 +105,10 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
         styleOverrides: {
           root: {
             backgroundImage: "none",
+            // AppBar usa color="primary" por defecto (texto blanco). Como el fondo
+            // es translúcido y cambia con el modo, forzamos el color de texto del
+            // tema para que lo que use color="inherit" sea legible en claro y oscuro.
+            color: isDark ? "#f3f4f6" : "#111827",
             backgroundColor: isDark ? "rgba(15, 17, 23, 0.85)" : "rgba(255, 255, 255, 0.85)",
             backdropFilter: "blur(12px)",
             borderBottom: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(0, 0, 0, 0.08)",
