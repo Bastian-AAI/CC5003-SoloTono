@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import { ThemeModeProvider } from "./context/ThemeModeContext";
+import { getNotebookBackground } from "./theme";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/HomePage";
@@ -26,7 +27,13 @@ function App() {
         >
           <Navbar />
 
-          <Box component="main" sx={{ flexGrow: 1 }}>
+          <Box
+            component="main"
+            sx={(theme) => ({
+              flexGrow: 1,
+              ...getNotebookBackground(theme.palette.mode),
+            })}
+          >
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/catalogo" element={<CatalogPage />} />

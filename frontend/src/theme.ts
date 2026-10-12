@@ -76,6 +76,26 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
               boxShadow: "0 4px 12px rgba(255, 111, 0, 0.25)",
             },
           },
+          // Botones con contorno: fondo sólido para que no se vea la cuadrícula
+          // de la página por debajo.
+          outlined: ({ theme }) => ({
+            backgroundColor: theme.palette.background.paper,
+            "&:hover": {
+              // MUI pinta el hover con un tinte translúcido; lo ponemos como
+              // capa encima del fondo sólido para que siga siendo opaco.
+              backgroundColor: theme.palette.background.paper,
+              backgroundImage:
+                "linear-gradient(color-mix(in srgb, currentColor 6%, transparent), color-mix(in srgb, currentColor 6%, transparent))",
+            },
+          }),
+        },
+      },
+      // Chips con contorno (p. ej. filtros activos del catálogo): mismo criterio.
+      MuiChip: {
+        styleOverrides: {
+          outlined: ({ theme }) => ({
+            backgroundColor: theme.palette.background.paper,
+          }),
         },
       },
       MuiCard: {
@@ -118,4 +138,30 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
       },
     },
   });
+};
+
+/**
+ * Fondo de "cuaderno cuadriculado" para el contenido de la página.
+ *  - Modo claro : hoja clara con líneas gris oscuro, suaves para no competir con el texto.
+ *  - Modo oscuro: hoja negra con líneas gris claro.
+ * Se usa solo en el <main>, así el Navbar y el Footer no cambian.
+ * Para ajustarlo: GRID_SIZE cambia el tamaño del cuadro y las constantes de
+ * color/opacidad cambian qué tan marcadas se ven las líneas.
+ */
+const GRID_SIZE = 24; // px por cuadro
+
+export const getNotebookBackground = (mode: "light" | "dark") => {
+  const isDark = mode === "dark";
+
+  const paper = isDark ? "#0b0b0d" : "#f7f6f2";
+  const line = isDark ? "rgba(209, 213, 219, 0.12)" : "rgba(55, 65, 81, 0.17)";
+
+  return {
+    backgroundColor: paper,
+    backgroundImage: [
+      `linear-gradient(to right, ${line} 1px, transparent 1px)`,
+      `linear-gradient(to bottom, ${line} 1px, transparent 1px)`,
+    ].join(", "),
+    backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`,
+  };
 };

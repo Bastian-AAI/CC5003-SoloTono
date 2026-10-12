@@ -6,13 +6,13 @@ import {
   Button,
   Typography,
   Alert,
-  Container,
   Paper,
 } from '@mui/material'
 import MusicNoteIcon from '@mui/icons-material/MusicNote'
 import axios from 'axios'
 import { useAuth } from '../hooks/useAuth'
 import { getErrorMessage } from '../utils/errors'
+import { AuthLayout } from '../components/AuthLayout'
 
 interface LocationState {
   from?: string
@@ -53,7 +53,7 @@ export function LoginPage() {
   }
 
   return (
-    <Container maxWidth="xs" sx={{ py: 8 }}>
+    <AuthLayout>
       <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
         <Box
           sx={{
@@ -136,7 +136,7 @@ export function LoginPage() {
           </Typography>
         </Box>
       </Paper>
-    </Container>
+    </AuthLayout>
   )
 }
 
@@ -165,7 +165,7 @@ export function RegisterPage() {
   }
 
   return (
-    <Container maxWidth="xs" sx={{ py: 8 }}>
+    <AuthLayout>
       <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
         <Box
           sx={{
@@ -255,6 +255,6 @@ export function RegisterPage() {
           </Typography>
         </Box>
       </Paper>
-    </Container>
+    </AuthLayout>
   )
 }

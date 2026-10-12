@@ -83,10 +83,12 @@ export const StoreOffersList = ({ offers }: Props) => {
                   borderRadius: "10px",
                   overflow: "hidden",
                   borderColor: isBest ? "primary.main" : "divider",
-                  bgcolor: isBest
-                    ? alpha(theme.palette.primary.main, 0.08)
-                    : "background.paper",
-                  opacity: offer.inStock ? 1 : 0.7,
+                  // Fondo sólido (con tinte naranja si es la mejor oferta) para que
+                  // no se transparente la cuadrícula de la página.
+                  bgcolor: "background.paper",
+                  backgroundImage: isBest
+                    ? `linear-gradient(${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.08)})`
+                    : "none",
                 })}
               >
                 <ButtonBase
@@ -106,6 +108,8 @@ export const StoreOffersList = ({ offers }: Props) => {
                     textAlign: "left",
                     px: 1.5,
                     py: 1.25,
+                    // Las tiendas sin stock se atenúan solo en su contenido
+                    opacity: offer.inStock ? 1 : 0.7,
                     "&:hover": { bgcolor: "action.hover" },
                   }}
                 >

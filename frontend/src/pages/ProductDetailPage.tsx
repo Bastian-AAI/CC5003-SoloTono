@@ -232,7 +232,9 @@ export const ProductDetailPage = () => {
               py: 1,
               borderRadius: "10px",
               borderColor: "primary.main",
-              bgcolor: alpha(theme.palette.primary.main, 0.07),
+              // Tinte naranja sobre fondo sólido, para que no se vea la cuadrícula detrás
+              bgcolor: "background.paper",
+              backgroundImage: `linear-gradient(${alpha(theme.palette.primary.main, 0.07)}, ${alpha(theme.palette.primary.main, 0.07)})`,
             })}
           >
             <Box>
