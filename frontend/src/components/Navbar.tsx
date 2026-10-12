@@ -170,7 +170,7 @@ export const Navbar = () => {
                     mt: -0.3,
                   }}
                 >
-                  Comparador Musical
+                  Cotizador Musical
                 </Typography>
               </Box>
             </Box>

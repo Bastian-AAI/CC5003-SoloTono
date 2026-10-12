@@ -12,7 +12,10 @@ export const Footer = () => {
       sx={{
         py: 5,
         mt: "auto",
-        backgroundColor: "background.paper",
+        // Un gris un poco más oscuro que el fondo cuadriculado de la página
+        // (claro: #f7f6f2, oscuro: #0b0b0d; ver getNotebookBackground en theme.ts)
+        backgroundColor: (theme) =>
+          theme.palette.mode === "dark" ? "#000000" : "#e3e2dd",
         borderTop: 1,
         borderColor: "divider",
       }}
