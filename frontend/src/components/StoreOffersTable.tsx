@@ -91,7 +91,7 @@ export const StoreOffersTable = ({ offers }: Props) => {
                         icon={<StarIcon sx={{ fontSize: "14px !important" }} />}
                         label="Mejor Precio"
                         size="small"
-                        color="primary"
+                        color="secondary"
                         sx={{ height: 22, fontSize: "0.7rem", fontWeight: 700 }}
                       />
                     )}

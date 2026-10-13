@@ -138,12 +138,12 @@ export const Navbar = () => {
                   width: 38,
                   height: 38,
                   borderRadius: "10px",
-                  background: "linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%)",
+                  background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#ffffff",
-                  boxShadow: "0 4px 10px rgba(255, 111, 0, 0.35)",
+                  boxShadow: "0 4px 10px rgba(99, 102, 241, 0.35)",
                 }}
               >
                 <MusicNoteIcon />
@@ -158,7 +158,7 @@ export const Navbar = () => {
                     letterSpacing: "-0.5px",
                   }}
                 >
-                  Solo<span style={{ color: "#ff6f00" }}>Tono</span>
+                  Solo<span style={{ color: "#6366f1" }}>Tono</span>
                 </Typography>
                 <Typography
                   variant="caption"
@@ -241,9 +241,9 @@ export const Navbar = () => {
                   aria-label="alternar modo de color"
                 >
                   {mode === "dark" ? (
-                    <Brightness7Icon sx={{ color: "#ffb74d" }} />
+                    <Brightness7Icon sx={{ color: "#f59e0b" }} />
                   ) : (
-                    <Brightness4Icon sx={{ color: "#5c6bc0" }} />
+                    <Brightness4Icon sx={{ color: "#6366f1" }} />
                   )}
                 </IconButton>
               </Tooltip>
@@ -276,13 +276,11 @@ export const Navbar = () => {
                     component={RouterLink}
                     to="/register"
                     variant="contained"
-                    sx={{ fontWeight: 700,
-                          bgcolor: "#ff6f00",
-                          "&:hover": { bgcolor: "#e66400" }
-                     }}
-                     >
-                      Registrarse
-                     </Button>
+                    color="primary"
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Registrarse
+                  </Button>
               </Box>
               )}
             </Box>
@@ -313,7 +311,7 @@ export const Navbar = () => {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <MusicNoteIcon sx={{ color: "primary.main" }} />
             <Typography variant="h6" sx={{ fontWeight: 800 }}>
-              Solo<span style={{ color: "#ff6f00" }}>Tono</span>
+              Solo<span style={{ color: "#6366f1" }}>Tono</span>
             </Typography>
           </Box>
           <IconButton onClick={() => setMobileDrawerOpen(false)} size="small">
@@ -374,10 +372,11 @@ export const Navbar = () => {
               component={RouterLink}
               to="/register"
               variant="contained"
+              color="primary"
               fullWidth
               startIcon={<PersonAddIcon />}
               onClick={() => setMobileDrawerOpen(false)}
-              sx={{ bgcolor: "#ff6f00", "&:hover": { bgcolor: "#e66400" } }}
+              sx={{ fontWeight: 700 }}
             >
               Crear Cuenta
             </Button>

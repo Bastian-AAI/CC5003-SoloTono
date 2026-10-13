@@ -7,24 +7,24 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
     palette: {
       mode,
       primary: {
-        main: "#ff6f00", // Tono cálido / ámbar musical
-        light: "#ffa040",
-        dark: "#c43e00",
+        main: "#6366f1", // Índigo eléctrico moderno (Studio Pro)
+        light: "#818cf8",
+        dark: "#4f46e5",
         contrastText: "#ffffff",
       },
       secondary: {
-        main: "#00b0ff", // Azul eléctrico para acentos y badges
-        light: "#69e2ff",
-        dark: "#0081cb",
+        main: "#f59e0b", // Ámbar / Oro cálido para mejores ofertas, ratings y acentos
+        light: "#fbbf24",
+        dark: "#d97706",
         contrastText: "#ffffff",
       },
       background: {
-        default: isDark ? "#0f1117" : "#f8fafc",
-        paper: isDark ? "#171a23" : "#ffffff",
+        default: isDark ? "#0a0e1a" : "#f8fafc",
+        paper: isDark ? "#121826" : "#ffffff",
       },
       text: {
-        primary: isDark ? "#f3f4f6" : "#111827",
-        secondary: isDark ? "#9ca3af" : "#4b5563",
+        primary: isDark ? "#f1f5f9" : "#0f172a",
+        secondary: isDark ? "#94a3b8" : "#475569",
       },
     },
     typography: {
@@ -73,7 +73,7 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
             padding: "8px 18px",
             boxShadow: "none",
             "&:hover": {
-              boxShadow: "0 4px 12px rgba(255, 111, 0, 0.25)",
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.28)",
             },
           },
           // Botones con contorno: fondo sólido para que no se vea la cuadrícula
@@ -108,8 +108,8 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
             "&:hover": {
               transform: "translateY(-4px)",
               boxShadow: isDark 
-                ? "0 12px 24px -10px rgba(0, 0, 0, 0.6)" 
-                : "0 12px 24px -10px rgba(0, 0, 0, 0.12)",
+                ? "0 12px 24px -10px rgba(0, 0, 0, 0.7)" 
+                : "0 12px 24px -10px rgba(99, 102, 241, 0.15)",
             },
           },
         },
@@ -128,8 +128,8 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
             // AppBar usa color="primary" por defecto (texto blanco). Como el fondo
             // es translúcido y cambia con el modo, forzamos el color de texto del
             // tema para que lo que use color="inherit" sea legible en claro y oscuro.
-            color: isDark ? "#f3f4f6" : "#111827",
-            backgroundColor: isDark ? "rgba(15, 17, 23, 0.85)" : "rgba(255, 255, 255, 0.85)",
+            color: isDark ? "#f1f5f9" : "#0f172a",
+            backgroundColor: isDark ? "rgba(10, 14, 26, 0.85)" : "rgba(255, 255, 255, 0.85)",
             backdropFilter: "blur(12px)",
             borderBottom: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(0, 0, 0, 0.08)",
             boxShadow: "none",
@@ -142,8 +142,8 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
 
 /**
  * Fondo de "cuaderno cuadriculado" para el contenido de la página.
- *  - Modo claro : hoja clara con líneas gris oscuro, suaves para no competir con el texto.
- *  - Modo oscuro: hoja negra con líneas gris claro.
+ *  - Modo claro : hoja clara con líneas gris pizarra suaves.
+ *  - Modo oscuro: hoja azul noche/carbón con líneas índigo ultra sutiles.
  * Se usa solo en el <main>, así el Navbar y el Footer no cambian.
  * Para ajustarlo: GRID_SIZE cambia el tamaño del cuadro y las constantes de
  * color/opacidad cambian qué tan marcadas se ven las líneas.
@@ -153,8 +153,8 @@ const GRID_SIZE = 24; // px por cuadro
 export const getNotebookBackground = (mode: "light" | "dark") => {
   const isDark = mode === "dark";
 
-  const paper = isDark ? "#0b0b0d" : "#f7f6f2";
-  const line = isDark ? "rgba(209, 213, 219, 0.12)" : "rgba(55, 65, 81, 0.17)";
+  const paper = isDark ? "#080c16" : "#f8fafc";
+  const line = isDark ? "rgba(99, 102, 241, 0.08)" : "rgba(100, 116, 139, 0.12)";
 
   return {
     backgroundColor: paper,

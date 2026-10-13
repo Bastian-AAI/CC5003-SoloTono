@@ -82,12 +82,11 @@ export const StoreOffersList = ({ offers }: Props) => {
                 sx={(theme) => ({
                   borderRadius: "10px",
                   overflow: "hidden",
-                  borderColor: isBest ? "primary.main" : "divider",
-                  // Fondo sólido (con tinte naranja si es la mejor oferta) para que
-                  // no se transparente la cuadrícula de la página.
+                  borderColor: isBest ? "secondary.main" : "divider",
+                  // Fondo sólido con tinte ámbar si es la mejor oferta
                   bgcolor: "background.paper",
                   backgroundImage: isBest
-                    ? `linear-gradient(${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.08)})`
+                    ? `linear-gradient(${alpha(theme.palette.secondary.main, 0.08)}, ${alpha(theme.palette.secondary.main, 0.08)})`
                     : "none",
                 })}
               >
@@ -136,7 +135,7 @@ export const StoreOffersList = ({ offers }: Props) => {
                           icon={<StarIcon sx={{ fontSize: "12px !important" }} />}
                           label="Mejor precio"
                           size="small"
-                          color="primary"
+                          color="secondary"
                           sx={{
                             height: 20,
                             fontSize: "0.68rem",
