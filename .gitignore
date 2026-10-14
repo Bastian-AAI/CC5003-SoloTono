@@ -46,6 +46,9 @@ docs/scraper-research/*_files/
 docs/scraper-research/*.png
 docs/scraper-research/*.jpg
 docs/scraper-research/*.jpeg
+docs/scraper-research/*.md
+!docs/scraper-research/README.md
+CC5003-SoloTono-Scraping
 
 # Artefactos capturados de scraping (HTML, archivos asociados, sitemaps y resultados pesados)
 *.html

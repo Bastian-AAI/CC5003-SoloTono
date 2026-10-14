@@ -11,8 +11,13 @@ import { unknownEndpoint, errorHandler } from "./middleware/errorHandler.ts";
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
-app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    exposedHeaders: ["X-CSRF-Token"],
+  }),
+);app.use(express.json());
 app.use(cookieParser());
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
@@ -107,7 +112,6 @@ app.get("/api/products", async (req: Request, res: Response, next: NextFunction)
       section: product.section,
       subCategory: product.subCategory,
       imageUrl: product.imageUrl,
-      description: product.description,
       minPrice: product.minPrice ?? 0,
       maxPrice: product.maxPrice,
       offers: offersByProduct.get(String(product._id)) ?? [],

@@ -1,0 +1,1 @@
+"""Audiomusica (VTEX) scraper."""

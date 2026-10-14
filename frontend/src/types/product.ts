@@ -16,7 +16,7 @@ export interface Product {
   section?: 'Instrumentos' | 'Piezas y Repuestos' | 'Equipos de sonido' | string;
   subCategory?: string;
   imageUrl: string;
-  description: string;
+  description?: string;
   minPrice: number;
   offers: StoreOffer[];
 }

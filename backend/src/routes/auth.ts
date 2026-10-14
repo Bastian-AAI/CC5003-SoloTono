@@ -9,7 +9,7 @@ import { badRequest, unauthorized } from "../utils/errors.ts";
 import { pick } from "../utils/pick.ts";
 
 const SALT_ROUNDS = 10;
-const TOKEN_TTL_SECONDS = 60 * 60; // 1 hora
+const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 días
 
 // Opciones de la cookie con el JWT:
 //  httpOnly -> JavaScript del navegador no puede leerla (mitiga robo de token por XSS)

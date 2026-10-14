@@ -30,6 +30,12 @@ const asObject = (value: unknown): Record<string, unknown> | null =>
 const asString = (value: unknown): string | null =>
   typeof value === "string" && value.trim() !== "" ? value.trim() : null;
 
+const stripHtml = (value: unknown): string | undefined => {
+  const text = asString(value);
+  if (!text) return undefined;
+  return text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() || undefined;
+};
+
 const asNumber = (value: unknown): number | null => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string" && value.trim() !== "") {
@@ -159,7 +165,7 @@ router.post("/sync", async (req: Request, res: Response, next: NextFunction) => 
             section: asString(productPayload.section) ?? undefined,
             subCategory: asString(productPayload.subCategory) ?? undefined,
             imageUrl: asString(productPayload.imageUrl) ?? "/placeholder-instrument.svg",
-            description: asString(productPayload.description) ?? undefined,
+            description: stripHtml(productPayload.description),
             minPrice: priceCash,
             maxPrice: priceNormal,
             availableStores: [storeName],
@@ -172,8 +178,8 @@ router.post("/sync", async (req: Request, res: Response, next: NextFunction) => 
           if (asString(productPayload.section)) product.section = asString(productPayload.section) as string;
           if (asString(productPayload.subCategory)) product.subCategory = asString(productPayload.subCategory) as string;
           if (asString(productPayload.imageUrl)) product.imageUrl = asString(productPayload.imageUrl) as string;
-          if (asString(productPayload.description)) product.description = asString(productPayload.description) as string;
-          await product.save();
+          const cleanedDescription = stripHtml(productPayload.description);
+          if (cleanedDescription) product.description = cleanedDescription;          await product.save();
         }
 
         const inStock = typeof offerRaw.inStock === "boolean" ? offerRaw.inStock : true;
