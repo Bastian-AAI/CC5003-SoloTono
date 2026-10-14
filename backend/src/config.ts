@@ -18,6 +18,7 @@ export const config = {
   MONGODB_URI: required(isTest ? "TEST_MONGODB_URI" : "MONGODB_URI"),
   MONGODB_DBNAME: (isTest ? process.env.TEST_MONGODB_DBNAME : process.env.MONGODB_DBNAME) ?? "solotono",
   JWT_SECRET: required("JWT_SECRET"),
+  SCRAPER_API_KEY: process.env.SCRAPER_API_KEY ?? "",
 };
 
 export default config;

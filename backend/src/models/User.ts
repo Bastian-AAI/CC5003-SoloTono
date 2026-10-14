@@ -7,8 +7,11 @@ export type Role = (typeof ROLES)[number];
 export interface IUser {
   username: string;
   name: string;
+  email?: string;
   passwordHash: string;
   role: Role;
+  favorites: mongoose.Types.ObjectId[];
+  preferredCategories: string[];
 }
 
 const userSchema = new Schema<IUser>(
@@ -24,10 +27,11 @@ const userSchema = new Schema<IUser>(
       match: [/^[a-z0-9_.-]+$/, "El usuario solo admite letras, números, punto, guion y guion bajo"],
     },
     name: { type: String, trim: true, maxlength: [60, "El nombre puede tener como máximo 60 caracteres"], default: "" },
-    // select:false -> nunca sale en las consultas a menos que se pida explícitamente (login).
+    email: { type: String, trim: true, lowercase: true, sparse: true },
     passwordHash: { type: String, required: true, select: false },
-    // El rol NUNCA se acepta desde el cliente (registro/edición lo ignoran). Se asigna con `npm run make-moderator`.
     role: { type: String, enum: ROLES, default: "user" },
+    favorites: [{ type: Schema.Types.ObjectId, ref: "Product" }],
+    preferredCategories: [{ type: String }],
   },
   schemaOptions,
 );

@@ -7,7 +7,7 @@
     "dev": "node --experimental-strip-types --watch src/index.ts",
     "build": "tsc",
     "start": "NODE_ENV=production node out/index.js",
-    "seed": "node src/seed.ts",
+    "seed": "node --experimental-strip-types src/seed.ts",
     "make-moderator": "node src/makeModerator.ts",
     "test": "cross-env NODE_ENV=test node --test --test-concurrency=1 tests/*.test.ts"
   },

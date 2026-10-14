@@ -25,3 +25,33 @@ pnpm-lock.yaml
 Thumbs.db
 .vscode/
 .idea/
+
+# Scraping: artefactos capturados o generados localmente
+*.html.gz
+*_files/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+node_modules/
+scrapers/**/historico_precios.jsonl
+scrapers/**/resolucion_detalle.json
+scrapers/**/watchlist.json
+
+# Capturas de páginas para investigación (pueden pesar mucho)
+docs/scraper-research/*.html
+docs/scraper-research/*.html.gz
+docs/scraper-research/*_files/
+docs/scraper-research/*.png
+docs/scraper-research/*.jpg
+docs/scraper-research/*.jpeg
+
+# Artefactos capturados de scraping (HTML, archivos asociados, sitemaps y resultados pesados)
+*.html
+*_files/
+sitemap.xml
+robots.txt
+final watchlit.json
+watchlist resultante.json
+salida esperada idsolver.txt
