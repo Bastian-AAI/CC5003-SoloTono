@@ -232,6 +232,28 @@ npm run lint
 - `POST /api/auth/logout`
 - `POST /api/internal/scraper/sync` (protegido por API key)
 
+## Organización de scrapers
+
+Para que los 6 devs no se estorben ni hagan cambios al backend, sigan esta estructura:
+
+```text
+scrapers/
+├── common/        # utilidades compartidas: HTTP, retry, normalización, cliente API
+├── audiomusica/
+├── casamarilla/
+├── <tienda>/
+└── ...
+docs/scraper-research/   # investigaciones y HTMLs de referencia, no código ejecutable
+```
+
+Reglas:
+- No modificar backend ni modelos Mongo desde ramas de scraper sin PR.
+- Todos los scrapers envían datos solo a `/api/internal/scraper/sync`.
+- Cada scraper debe transformar sus datos al payload definido en `docs/scraper-api.md` (pendiente de crear) antes de enviarlos.
+- No commitear HTML crudo ni datos pesados de scraping; solo código y documentación útil.
+- Crear rama por tienda: `scraper/<tienda>`.
+- Utilidades compartidas solo en `scrapers/common/`.
+
 ## Notas operativas
 
 - La app asume backend en `localhost:3001` y frontend en `localhost:5173`.

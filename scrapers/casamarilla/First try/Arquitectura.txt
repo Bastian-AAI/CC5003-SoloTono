@@ -1,0 +1,13 @@
+proyecto/
+├── config.py               # Configuración central
+├── db/
+│   ├── __init__.py
+│   ├── base.py             # Interfaz abstracta (Repository pattern)
+│   ├── sqlite_backend.py   # Implementación SQLite
+│   ├── postgres_backend.py # Implementación PostgreSQL (futuro)
+│   └── factory.py          # Fábrica que elige el backend según config
+├── models.py               # Dataclasses (Producto, PrecioSnapshot)
+├── scraper.py              # Lógica de scraping (agnóstica a la DB)
+├── tracker.py              # Orquestador: lee watchlist → scrapea → guarda
+├── resolver_watchlist.py   # (el que ya tienes)
+└── requirements.txt
