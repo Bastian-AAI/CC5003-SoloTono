@@ -94,6 +94,49 @@ class TestTaxonomy(unittest.TestCase):
         res = classify_product("Ernie Ball Regular Slinky 2221 Cuerdas para Guitarra", session=self.session)
         self.assertEqual(res.category_slug, "cuerdas-guitarra-y-bajo")
 
+        # 8. Accessories mentioning target instrument must NOT be classified as instruments
+        res_strings = classify_product("Cuerdas Guitarra Eléctrica Ernie Ball 10-46", session=self.session)
+        self.assertEqual(res_strings.category_slug, "cuerdas-guitarra-y-bajo")
+
+        res_case = classify_product("Estuche Rígido para Bajo Eléctrico Fender", session=self.session)
+        self.assertEqual(res_case.category_slug, "fundas-y-estuches")
+
+        res_stand = classify_product("Atril para Guitarra Eléctrica Hércules", session=self.session)
+        self.assertEqual(res_stand.category_slug, "soportes-stands")
+
+        res_capo = classify_product("Cejillo Trigger Capo para Guitarra Acústica", session=self.session)
+        self.assertEqual(res_capo.category_slug, "cejillos-capos")
+
+        res_sticks = classify_product("Baquetas Vic Firth 5A American Classic para Batería", session=self.session)
+        self.assertEqual(res_sticks.category_slug, "parches-y-baquetas")
+
+        # 9. Non-musical products must be marked as excluded
+        res_merch = classify_product("Abrebotellas Fender Custom Shop", session=self.session)
+        self.assertTrue(res_merch.is_excluded)
+
+        res_demo = classify_product("Producto Demo Test Tienda", session=self.session)
+        self.assertTrue(res_demo.is_excluded)
+
+        # 10. Instrument bundle must preserve instrument category
+        res_bundle = classify_product("Guitarra Clásica Yamaha C40 con funda y afinador", session=self.session)
+        self.assertEqual(res_bundle.category_slug, "guitarras-clasicas")
+
+        # 11. Newly expanded categories
+        res_portable_keys = classify_product("Casio CT-S300 Teclado Portátil 61 Teclas", session=self.session)
+        self.assertEqual(res_portable_keys.category_slug, "teclados-portatiles")
+
+        res_melodica = classify_product("Melódica Suzuki 37 Teclas con Funda", session=self.session)
+        self.assertEqual(res_melodica.category_slug, "acordeones-y-melodicas")
+
+        res_wireless = classify_product("Sistema Inalámbrico Shure BLX24/PG58", session=self.session)
+        self.assertEqual(res_wireless.category_slug, "sistemas-inalambricos")
+
+        res_dj = classify_product("Pioneer DJ DDJ-FLX4 Controlador DJ 2 Canales", session=self.session)
+        self.assertEqual(res_dj.category_slug, "equipos-dj-y-tornamesas")
+
+        res_lighting = classify_product("Foco Par LED Chauvet SlimPAR 56 DMX", session=self.session)
+        self.assertEqual(res_lighting.category_slug, "iluminacion-y-escenario")
+
     def test_pipeline_assigns_category_id(self):
         seed_taxonomy(self.session)
 

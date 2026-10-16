@@ -18,6 +18,12 @@ router.get("/", async (req: Request, res: Response) => {
   res.json(names);
 });
 
+// GET /api/categories/tree - Estructura jerárquica de secciones, grupos y categorías
+router.get("/tree", async (_req: Request, res: Response) => {
+  const tree = await CategoryModel.getTaxonomyTree();
+  res.json(tree);
+});
+
 // GET /api/categories/:id - Obtener categoría por ID
 router.get("/:id", async (req: Request, res: Response) => {
   const categoryId = Number(req.params.id);

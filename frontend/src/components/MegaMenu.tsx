@@ -58,14 +58,20 @@ export const MegaMenu = ({ section, onClose }: Props) => {
 
   const decor = MENU_DECOR[section.id];
 
-  const handleItemClick = (param: string) => {
+  const handleItemClick = (title: string, slug?: string) => {
     onClose();
-    navigate(`/catalogo?q=${encodeURIComponent(param)}`);
+    const params = new URLSearchParams();
+    params.set("section", section.title);
+    params.set("category", slug || title);
+    navigate(`/catalogo?${params.toString()}`);
   };
 
-  const handleCategoryAllClick = (categoryName: string) => {
+  const handleCategoryAllClick = (groupName: string, groupSlug?: string) => {
     onClose();
-    navigate(`/catalogo?category=${encodeURIComponent(categoryName)}`);
+    const params = new URLSearchParams();
+    params.set("section", section.title);
+    params.set("group", groupSlug || groupName);
+    navigate(`/catalogo?${params.toString()}`);
   };
 
   return (
@@ -181,7 +187,7 @@ export const MegaMenu = ({ section, onClose }: Props) => {
                       <Link
                         component="button"
                         type="button"
-                        onClick={() => handleItemClick(item.queryParam)}
+                        onClick={() => handleItemClick(item.title, item.slug)}
                         underline="none"
                         sx={{
                           color: "text.secondary",
@@ -204,7 +210,7 @@ export const MegaMenu = ({ section, onClose }: Props) => {
                     <Link
                       component="button"
                       type="button"
-                      onClick={() => handleCategoryAllClick(col.allQueryParam)}
+                      onClick={() => handleCategoryAllClick(col.categoryName, col.groupSlug)}
                       underline="hover"
                       sx={{
                         color: "primary.main",

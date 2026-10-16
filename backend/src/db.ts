@@ -175,19 +175,35 @@ export const ensureSchema = async (): Promise<void> => {
     );
   }
 
-  // Asegurar categorías base si aún no se ha corrido scraper:init
+  // Asegurar categorías base con sección y grupo si aún no se ha corrido scraper:init
   const catCount = await query<{ count: string }>("SELECT COUNT(*)::text AS count FROM categories");
   if (Number(catCount.rows[0]?.count ?? 0) === 0) {
+    const secRes = await query<{ id: number }>(
+      `INSERT INTO sections (name, slug, ordering)
+       VALUES ('Categorías en Instrumentos', 'instrumentos', 1)
+       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+       RETURNING id`,
+    );
+    const secId = secRes.rows[0]?.id;
+
+    const grpRes = await query<{ id: number }>(
+      `INSERT INTO category_groups (section_id, name, slug, ordering)
+       VALUES ($1, 'Cuerda', 'cuerda', 1)
+       ON CONFLICT (slug) DO UPDATE SET section_id = EXCLUDED.section_id
+       RETURNING id`,
+      [secId],
+    );
+    const grpId = grpRes.rows[0]?.id;
+
     await query(
-      `INSERT INTO categories (name, slug, ordering)
+      `INSERT INTO categories (group_id, name, slug, ordering)
        VALUES
-         ('Guitarras Eléctricas', 'guitarras-electricas', 1),
-         ('Bajos Eléctricos', 'bajos-electricos', 2),
-         ('Teclados y Pianos', 'teclados-y-pianos', 3),
-         ('Baterías y Percusión', 'baterias-y-percusion', 4),
-         ('Amplificadores', 'amplificadores', 5),
-         ('Pedales y Efectos', 'pedales-y-efectos', 6)
-       ON CONFLICT (slug) DO NOTHING`,
+         ($1, 'Guitarras Eléctricas', 'guitarras-electricas', 1),
+         ($1, 'Guitarras Acústicas', 'guitarras-acusticas', 2),
+         ($1, 'Bajos Eléctricos', 'bajos-electricos', 3),
+         ($1, 'Guitarras Clásicas', 'guitarras-clasicas', 4)
+       ON CONFLICT (slug) DO UPDATE SET group_id = EXCLUDED.group_id`,
+      [grpId],
     );
   }
 

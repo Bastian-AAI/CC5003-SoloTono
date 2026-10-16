@@ -15,8 +15,11 @@ export interface IProduct {
   name: string;
   brand: string;
   category: string;
+  categorySlug?: string;
   section: string;
+  sectionSlug?: string;
   subCategory?: string;
+  groupSlug?: string;
   imageUrl: string;
   description: string;
   minPrice: number;
@@ -36,6 +39,8 @@ export interface IPriceHistoryPoint {
 export interface ProductFilterOptions {
   category?: string;
   section?: string;
+  group?: string;
+  brand?: string;
   store?: string;
   q?: string;
   sort?: string;
@@ -47,8 +52,11 @@ interface RawProductRow {
   name: string;
   brand: string;
   category: string;
+  category_slug?: string | null;
   section: string;
+  section_slug?: string | null;
   sub_category?: string;
+  group_slug?: string | null;
   picture_url: string | null;
   description: string | null;
   offers: IStoreOfferSummary[] | null;
@@ -60,8 +68,11 @@ const mapProductRow = (row: RawProductRow): IProduct => ({
   name: row.name,
   brand: row.brand,
   category: row.category,
+  categorySlug: row.category_slug || undefined,
   section: row.section,
+  sectionSlug: row.section_slug || undefined,
   subCategory: row.sub_category || undefined,
+  groupSlug: row.group_slug || undefined,
   imageUrl: row.picture_url || "/placeholder-instrument.svg",
   description:
     row.description ||
@@ -71,8 +82,15 @@ const mapProductRow = (row: RawProductRow): IProduct => ({
 });
 
 export const ProductModel = {
+  findAllBrands: async (): Promise<string[]> => {
+    const result = await query<{ brand: string }>(
+      "SELECT DISTINCT brand FROM products WHERE brand IS NOT NULL AND brand != '' ORDER BY brand ASC",
+    );
+    return result.rows.map((r) => r.brand);
+  },
+
   findAll: async (filters: ProductFilterOptions = {}): Promise<IProduct[]> => {
-    const { category, section, store, q, sort, in_stock } = filters;
+    const { category, section, group, brand, store, q, sort, in_stock } = filters;
 
     const conditions: string[] = [];
     const params: unknown[] = [];
@@ -92,16 +110,31 @@ export const ProductModel = {
     }
 
     if (typeof section === "string" && section.trim() !== "" && section !== "Todas") {
-      conditions.push(`(s.name ILIKE $${paramIndex} OR s.slug ILIKE $${paramIndex})`);
-      params.push(`%${section.trim()}%`);
+      const secClean = section.trim();
+      conditions.push(`(s.slug = $${paramIndex} OR s.name ILIKE $${paramIndex} OR s.name ILIKE $${paramIndex + 1})`);
+      params.push(secClean, `%${secClean}%`);
+      paramIndex += 2;
+    }
+
+    if (typeof group === "string" && group.trim() !== "" && group !== "Todas") {
+      const grpClean = group.trim();
+      conditions.push(`(cg.slug = $${paramIndex} OR cg.name ILIKE $${paramIndex})`);
+      params.push(grpClean);
       paramIndex++;
     }
 
     if (typeof category === "string" && category.trim() !== "" && category !== "Todas") {
+      const catClean = category.trim();
       conditions.push(
-        `(c.name ILIKE $${paramIndex} OR c.slug ILIKE $${paramIndex} OR p.category ILIKE $${paramIndex} OR cg.name ILIKE $${paramIndex})`,
+        `(c.slug = $${paramIndex} OR c.name ILIKE $${paramIndex} OR p.category ILIKE $${paramIndex} OR cg.slug = $${paramIndex} OR cg.name ILIKE $${paramIndex})`,
       );
-      params.push(`%${category.trim()}%`);
+      params.push(catClean);
+      paramIndex++;
+    }
+
+    if (typeof brand === "string" && brand.trim() !== "" && brand !== "Todas") {
+      conditions.push(`p.brand ILIKE $${paramIndex}`);
+      params.push(brand.trim());
       paramIndex++;
     }
 
@@ -148,8 +181,11 @@ export const ProductModel = {
           p.name,
           p.brand,
           COALESCE(c.name, p.category, 'Instrumentos') AS category,
-          COALESCE(s.name, 'Instrumentos') AS section,
+          c.slug AS category_slug,
+          COALESCE(s.name, 'Categorías en Instrumentos') AS section,
+          COALESCE(s.slug, 'instrumentos') AS section_slug,
           COALESCE(cg.name, p.family, '') AS sub_category,
+          cg.slug AS group_slug,
           COALESCE(
             NULLIF(p.picture_url, ''),
             split_part(MIN(NULLIF(e.picture_urls, '')), ',', 1),
@@ -182,7 +218,7 @@ export const ProductModel = {
         LEFT JOIN stores st ON e.store_id = st.id
         LEFT JOIN entity_histories eh ON e.active_registry_id = eh.id
         ${whereClause}
-        GROUP BY p.id, p.name, p.brand, c.name, s.name, cg.name, p.family, p.picture_url, p.description
+        GROUP BY p.id, p.name, p.brand, c.name, c.slug, s.name, s.slug, cg.name, cg.slug, p.family, p.picture_url, p.description, p.category
       )
       SELECT * FROM product_summaries
       ${orderByClause}
@@ -199,8 +235,11 @@ export const ProductModel = {
         p.name,
         p.brand,
         COALESCE(c.name, p.category, 'Instrumentos') AS category,
-        COALESCE(s.name, 'Instrumentos') AS section,
+        c.slug AS category_slug,
+        COALESCE(s.name, 'Categorías en Instrumentos') AS section,
+        COALESCE(s.slug, 'instrumentos') AS section_slug,
         COALESCE(cg.name, p.family, '') AS sub_category,
+        cg.slug AS group_slug,
         COALESCE(
           NULLIF(p.picture_url, ''),
           split_part(MIN(NULLIF(e.picture_urls, '')), ',', 1),
@@ -233,7 +272,7 @@ export const ProductModel = {
       LEFT JOIN stores st ON e.store_id = st.id
       LEFT JOIN entity_histories eh ON e.active_registry_id = eh.id
       WHERE p.id = $1
-      GROUP BY p.id, p.name, p.brand, c.name, s.name, cg.name, p.family, p.picture_url, p.description
+      GROUP BY p.id, p.name, p.brand, c.name, c.slug, s.name, s.slug, cg.name, cg.slug, p.family, p.picture_url, p.description, p.category
     `;
 
     const result = await query<RawProductRow>(sql, [id]);

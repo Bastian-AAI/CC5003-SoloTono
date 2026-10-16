@@ -8,6 +8,7 @@ import type {
   FavoriteItem,
   StoreDetail,
   CategoryDetail,
+  TaxonomySection,
 } from "../types/product";
 
 const API_BASE_URL = "/api";
@@ -44,6 +45,26 @@ export const productService = {
       return response.data;
     } catch {
       return Array.from(new Set(FALLBACK_PRODUCTS.map((p) => p.category)));
+    }
+  },
+
+  // Obtener árbol taxonómico completo
+  getTaxonomyTree: async (): Promise<TaxonomySection[]> => {
+    try {
+      const response = await axios.get<TaxonomySection[]>(`${API_BASE_URL}/categories/tree`);
+      return response.data;
+    } catch {
+      return [];
+    }
+  },
+
+  // Obtener lista de marcas disponibles
+  getBrands: async (): Promise<string[]> => {
+    try {
+      const response = await axios.get<string[]>(`${API_BASE_URL}/products/brands`);
+      return response.data;
+    } catch {
+      return Array.from(new Set(FALLBACK_PRODUCTS.map((p) => p.brand))).sort();
     }
   },
 
@@ -409,14 +430,25 @@ function fallbackProducts(params?: ProductFilterParams): Product[] {
   if (!params) return list;
 
   if (params.section && params.section !== "Todas") {
-    list = list.filter((p) => p.section?.toLowerCase() === params.section!.toLowerCase());
+    const secLower = params.section.toLowerCase();
+    list = list.filter((p) => p.section?.toLowerCase().includes(secLower));
+  }
+
+  if (params.group && params.group !== "Todas") {
+    const grpLower = params.group.toLowerCase();
+    list = list.filter((p) => p.subCategory?.toLowerCase() === grpLower || p.groupSlug?.toLowerCase() === grpLower);
   }
 
   if (params.category && params.category !== "Todas") {
     const catLower = params.category.toLowerCase();
     list = list.filter(
-      (p) => p.category.toLowerCase() === catLower || p.subCategory?.toLowerCase() === catLower
+      (p) => p.category.toLowerCase() === catLower || p.categorySlug?.toLowerCase() === catLower
     );
+  }
+
+  if (params.brand && params.brand !== "Todas") {
+    const brandLower = params.brand.toLowerCase();
+    list = list.filter((p) => p.brand.toLowerCase() === brandLower);
   }
 
   if (params.store && params.store !== "Todas") {

@@ -3,7 +3,7 @@
 from typing import Dict, List, Any
 from sqlalchemy.orm import Session
 
-from solotono.db.models import Section, CategoryGroup, Category, Subcategory
+from solotono.db.models import Section, CategoryGroup, Category, Subcategory, Product, Entity
 
 
 TAXONOMY_FIXTURES: List[Dict[str, Any]] = [
@@ -95,6 +95,8 @@ TAXONOMY_FIXTURES: List[Dict[str, Any]] = [
                     },
                     {"name": "Sintetizadores", "slug": "sintetizadores", "ordering": 2},
                     {"name": "Teclados Controladores MIDI", "slug": "teclados-controladores-midi", "ordering": 3},
+                    {"name": "Teclados Portátiles", "slug": "teclados-portatiles", "ordering": 4},
+                    {"name": "Acordeones y Melódicas", "slug": "acordeones-y-melodicas", "ordering": 5},
                 ],
             },
         ],
@@ -178,6 +180,9 @@ TAXONOMY_FIXTURES: List[Dict[str, Any]] = [
                     {"name": "Parlantes Activos / PA", "slug": "parlantes-activos-pa", "ordering": 1},
                     {"name": "Consolas y Mezcladoras", "slug": "consolas-y-mezcladoras", "ordering": 2},
                     {"name": "Cables y Conectores", "slug": "cables-y-conectores", "ordering": 3},
+                    {"name": "Sistemas Inalámbricos", "slug": "sistemas-inalambricos", "ordering": 4},
+                    {"name": "Equipos DJ y Tornamesas", "slug": "equipos-dj-y-tornamesas", "ordering": 5},
+                    {"name": "Iluminación y Escenario", "slug": "iluminacion-y-escenario", "ordering": 6},
                 ],
             },
         ],
@@ -216,6 +221,10 @@ TAXONOMY_FIXTURES: List[Dict[str, Any]] = [
                     {"name": "Fundas y Estuches", "slug": "fundas-y-estuches", "ordering": 2},
                     {"name": "Soportes / Stands", "slug": "soportes-stands", "ordering": 3},
                     {"name": "Picks / Uñetas", "slug": "picks-unetas", "ordering": 4},
+                    {"name": "Cejillos / Capos", "slug": "cejillos-capos", "ordering": 5},
+                    {"name": "Parches y Baquetas", "slug": "parches-y-baquetas", "ordering": 6},
+                    {"name": "Fuentes de Poder y Pedalboards", "slug": "fuentes-y-pedalboards", "ordering": 7},
+                    {"name": "Boquillas, Cañas y Viento", "slug": "boquillas-y-canas", "ordering": 8},
                 ],
             },
             {
@@ -233,9 +242,25 @@ TAXONOMY_FIXTURES: List[Dict[str, Any]] = [
 ]
 
 
+def canonical_category_slugs() -> List[str]:
+    """Lista de slugs de todas las categorias canonicas definidas en TAXONOMY_FIXTURES."""
+    return [
+        c["slug"]
+        for s in TAXONOMY_FIXTURES
+        for g in s.get("groups", [])
+        for c in g.get("categories", [])
+    ]
+
+
 def seed_taxonomy(session: Session) -> Dict[str, int]:
-    """Populates the database with Sections, CategoryGroups, Categories, and Subcategories."""
-    stats = {"sections": 0, "groups": 0, "categories": 0, "subcategories": 0}
+    """Crea o actualiza Secciones, Grupos, Categorias y Subcategorias.
+
+    Es idempotente: las filas existentes se corrigen (nombre, orden y jerarquia), de modo
+    que categorias creadas sin grupo quedan enlazadas a su grupo canonico. Las categorias
+    que no pertenecen a la taxonomia se eliminan; sus productos quedan sin categoria hasta
+    la siguiente reclasificacion.
+    """
+    stats = {"sections": 0, "groups": 0, "categories": 0, "subcategories": 0, "updated": 0, "removed": 0}
 
     for s_data in TAXONOMY_FIXTURES:
         section = session.query(Section).filter(Section.slug == s_data["slug"]).first()
@@ -244,6 +269,10 @@ def seed_taxonomy(session: Session) -> Dict[str, int]:
             session.add(section)
             session.flush()
             stats["sections"] += 1
+        elif section.name != s_data["name"] or section.ordering != s_data["ordering"]:
+            section.name = s_data["name"]
+            section.ordering = s_data["ordering"]
+            stats["updated"] += 1
 
         for g_data in s_data.get("groups", []):
             group = session.query(CategoryGroup).filter(CategoryGroup.slug == g_data["slug"]).first()
@@ -257,6 +286,11 @@ def seed_taxonomy(session: Session) -> Dict[str, int]:
                 session.add(group)
                 session.flush()
                 stats["groups"] += 1
+            elif (group.section_id, group.name, group.ordering) != (section.id, g_data["name"], g_data["ordering"]):
+                group.section_id = section.id
+                group.name = g_data["name"]
+                group.ordering = g_data["ordering"]
+                stats["updated"] += 1
 
             for c_data in g_data.get("categories", []):
                 category = session.query(Category).filter(Category.slug == c_data["slug"]).first()
@@ -272,6 +306,11 @@ def seed_taxonomy(session: Session) -> Dict[str, int]:
                     session.add(category)
                     session.flush()
                     stats["categories"] += 1
+                elif (category.group_id, category.name, category.ordering) != (group.id, c_data["name"], c_data["ordering"]):
+                    category.group_id = group.id
+                    category.name = c_data["name"]
+                    category.ordering = c_data["ordering"]
+                    stats["updated"] += 1
 
                 for sub_data in c_data.get("subcategories", []):
                     subcat = session.query(Subcategory).filter(Subcategory.slug == sub_data["slug"]).first()
@@ -285,6 +324,14 @@ def seed_taxonomy(session: Session) -> Dict[str, int]:
                         )
                         session.add(subcat)
                         stats["subcategories"] += 1
+
+    session.flush()
+    valid_slugs = set(canonical_category_slugs())
+    for legacy in session.query(Category).filter(~Category.slug.in_(valid_slugs)).all():
+        session.query(Product).filter(Product.category_id == legacy.id).update({Product.category_id: None})
+        session.query(Entity).filter(Entity.category_id == legacy.id).update({Entity.category_id: None})
+        session.delete(legacy)
+        stats["removed"] += 1
 
     session.commit()
     return stats

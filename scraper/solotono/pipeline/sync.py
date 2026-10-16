@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
 
-from solotono.db.models import Entity, EntityHistory, Store
+from solotono.db.models import Entity, EntityHistory, Product, Store
 from solotono.scrapers.base import ScrapedProduct
 from solotono.matching.matcher import ProductMatcher
 from solotono.matching.taxonomy import classify_product
@@ -27,12 +27,19 @@ class IngestionPipeline:
             "entities_updated": 0,
             "histories_created": 0,
             "matched_entities": 0,
+            "excluded": 0,
         }
 
         # Cache stores by slug
         stores_cache: Dict[str, Store] = {}
 
         for p in products:
+            # Classify into Canonical Category; non-musical items are skipped entirely
+            tax_res = classify_product(p.name, raw_category=p.category, brand=p.brand, session=self.session)
+            if tax_res.is_excluded:
+                stats["excluded"] += 1
+                continue
+
             if p.store_slug not in stores_cache:
                 store = self.session.query(Store).filter(Store.slug == p.store_slug).first()
                 if not store:
@@ -59,9 +66,6 @@ class IngestionPipeline:
 
             now = datetime.now(timezone.utc).replace(tzinfo=None)
             is_new_entity = False
-
-            # Classify into Canonical Category
-            tax_res = classify_product(p.name, raw_category=p.category, brand=p.brand, session=self.session)
 
             if not entity:
                 is_new_entity = True
@@ -96,8 +100,7 @@ class IngestionPipeline:
                     entity.brand = p.brand
                 if p.category:
                     entity.category = p.category
-                if tax_res.category_id:
-                    entity.category_id = tax_res.category_id
+                entity.category_id = tax_res.category_id
                 if p.part_number:
                     entity.part_number = p.part_number
                 if p.ean:
@@ -106,14 +109,17 @@ class IngestionPipeline:
                     entity.picture_urls = ",".join(p.picture_urls)
                 entity.last_updated = now
 
-            # Propagate picture to canonical product if missing
-            if entity.product_id and entity.picture_urls:
-                from solotono.db.models import Product
+            # Propagate picture and category to canonical product if missing
+            if entity.product_id:
                 prod = self.session.query(Product).filter(Product.id == entity.product_id).first()
-                if prod and (not prod.picture_url or prod.picture_url.strip() == ""):
-                    first_img = entity.picture_urls.split(",")[0].strip()
-                    if first_img:
-                        prod.picture_url = first_img
+                if prod:
+                    if entity.picture_urls and (not prod.picture_url or prod.picture_url.strip() == ""):
+                        first_img = entity.picture_urls.split(",")[0].strip()
+                        if first_img:
+                            prod.picture_url = first_img
+                    if not prod.category_id and tax_res.category_id:
+                        prod.category_id = tax_res.category_id
+                        prod.category = tax_res.category_name
 
             # =========================================================================
             # Price History & active_registry Logic (SoloTodo Delta & Snapshot strategy)

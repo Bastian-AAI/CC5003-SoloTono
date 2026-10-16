@@ -11,6 +11,7 @@
     "scraper:init": "PYTHONPATH=scraper scraper/.venv/bin/python3 -m solotono init-db",
     "scraper:scrape": "PYTHONPATH=scraper scraper/.venv/bin/python3 -m solotono scrape",
     "scraper:scrape:all": "PYTHONPATH=scraper scraper/.venv/bin/python3 -m solotono scrape --all",
+    "scraper:classify": "PYTHONPATH=scraper scraper/.venv/bin/python3 -m solotono classify --all --limit 0",
     "scraper:stats": "PYTHONPATH=scraper scraper/.venv/bin/python3 -m solotono stats",
     "scraper:menu": "PYTHONPATH=scraper scraper/.venv/bin/python3 -m solotono menu",
     "dev": "concurrently -n \"backend,frontend\" -c \"blue,cyan\" \"npm run dev:backend\" \"npm run dev:frontend\"",

@@ -7,12 +7,20 @@ import { pick } from "../utils/pick.ts";
 
 const router = Router();
 
+// GET /api/products/brands - Listado de marcas con productos disponibles
+router.get("/brands", async (_req: Request, res: Response) => {
+  const brands = await ProductModel.findAllBrands();
+  res.json(brands);
+});
+
 // GET /api/products - Listar productos con filtros opcionales
 router.get("/", async (req: Request, res: Response) => {
-  const { category, section, store, q, sort, in_stock } = req.query;
+  const { category, section, group, brand, store, q, sort, in_stock } = req.query;
   const products = await ProductModel.findAll({
     category: typeof category === "string" ? category : undefined,
     section: typeof section === "string" ? section : undefined,
+    group: typeof group === "string" ? group : undefined,
+    brand: typeof brand === "string" ? brand : undefined,
     store: typeof store === "string" ? store : undefined,
     q: typeof q === "string" ? q : undefined,
     sort: typeof sort === "string" ? sort : undefined,

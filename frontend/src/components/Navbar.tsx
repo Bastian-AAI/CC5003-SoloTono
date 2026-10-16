@@ -93,14 +93,20 @@ export const Navbar = () => {
     }
   };
 
-  const handleMobileItemClick = (param: string) => {
+  const handleMobileItemClick = (sectionTitle: string, title: string, slug?: string) => {
     setMobileDrawerOpen(false);
-    navigate(`/catalogo?q=${encodeURIComponent(param)}`);
+    const params = new URLSearchParams();
+    params.set("section", sectionTitle);
+    params.set("category", slug || title);
+    navigate(`/catalogo?${params.toString()}`);
   };
 
-  const handleMobileCategoryAllClick = (categoryName: string) => {
+  const handleMobileCategoryAllClick = (sectionTitle: string, groupName: string, groupSlug?: string) => {
     setMobileDrawerOpen(false);
-    navigate(`/catalogo?category=${encodeURIComponent(categoryName)}`);
+    const params = new URLSearchParams();
+    params.set("section", sectionTitle);
+    params.set("group", groupSlug || groupName);
+    navigate(`/catalogo?${params.toString()}`);
   };
 
   return (
@@ -482,7 +488,7 @@ export const Navbar = () => {
                         {col.items.map((item) => (
                           <ListItem key={item.title} disablePadding sx={{ py: 0.3 }}>
                             <ListItemButton
-                              onClick={() => handleMobileItemClick(item.queryParam)}
+                              onClick={() => handleMobileItemClick(sec.title, item.title, item.slug)}
                               sx={{ py: 0.4, px: 1, borderRadius: 1 }}
                             >
                               <ListItemText
@@ -502,7 +508,7 @@ export const Navbar = () => {
                         ))}
                         <ListItem disablePadding sx={{ py: 0.3 }}>
                           <ListItemButton
-                            onClick={() => handleMobileCategoryAllClick(col.allQueryParam)}
+                            onClick={() => handleMobileCategoryAllClick(sec.title, col.categoryName, col.groupSlug)}
                             sx={{ py: 0.4, px: 1, borderRadius: 1 }}
                           >
                             <ListItemText

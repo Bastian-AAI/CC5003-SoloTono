@@ -29,20 +29,27 @@ class ProductMatcher:
         self.fuzzy_threshold = fuzzy_threshold
         self.pending_threshold = pending_threshold
 
-    def _propagate_image(self, product: Optional[Product], entity: Entity):
-        """If the canonical product lacks an image, update it with the entity's primary image."""
-        if product and (not product.picture_url or product.picture_url.strip() == ""):
-            if entity.picture_urls:
-                first_img = entity.picture_urls.split(",")[0].strip()
-                if first_img:
-                    product.picture_url = first_img
+    def _propagate_metadata(self, product: Optional[Product], entity: Entity):
+        """If the canonical product lacks an image or category, update it from the entity."""
+        if not product:
+            return
+        if (not product.picture_url or product.picture_url.strip() == "") and entity.picture_urls:
+            first_img = entity.picture_urls.split(",")[0].strip()
+            if first_img:
+                product.picture_url = first_img
+        if not product.category_id and entity.category_id:
+            product.category_id = entity.category_id
+            if not product.category and entity.category:
+                product.category = entity.category
+
+    _propagate_image = _propagate_metadata
 
     def match_entity(self, entity: Entity, auto_create_canonical: bool = False) -> MatchResult:
         """Evaluate an Entity against existing Products and associate if confidence is high."""
         # If entity is already associated, preserve association (SoloTodo rule) and ensure picture is synced
         if entity.is_associated and entity.product_id:
             existing_prod = self.session.query(Product).filter(Product.id == entity.product_id).first()
-            self._propagate_image(existing_prod, entity)
+            self._propagate_metadata(existing_prod, entity)
             return MatchResult(
                 entity_id=entity.id,
                 matched_product_id=entity.product_id,
@@ -109,6 +116,10 @@ class ProductMatcher:
 
         scored_candidates: List[Tuple[Product, float]] = []
         for cand in candidates:
+            # 0. Hard Disjunction: canonical category conflict (e.g. guitar vs guitar case)
+            if entity.category_id and cand.category_id and entity.category_id != cand.category_id:
+                continue
+
             cand_analysis = analyze_product_string(cand.name, raw_brand=cand.brand, sku=cand.part_number)
             cand_norm = cand_analysis["normalized_model"]
             if not norm_model or not cand_norm:
@@ -186,7 +197,7 @@ class ProductMatcher:
                 # High confidence match!
                 entity.product_id = best_cand.id
                 entity.is_associated = True
-                self._propagate_image(best_cand, entity)
+                self._propagate_metadata(best_cand, entity)
                 return MatchResult(
                     entity_id=entity.id,
                     matched_product_id=best_cand.id,
@@ -210,13 +221,13 @@ class ProductMatcher:
         # =========================================================================
         if auto_create_canonical and brand:
             canonical_name = analysis.get("clean_title") or entity.name.replace("®", "").replace("™", "").strip()
-            tax_res = classify_product(canonical_name, raw_category=entity.category, brand=brand, session=self.session)
+            tax_res = classify_product(entity.name, raw_category=entity.category, brand=brand, session=self.session)
 
             new_prod = Product(
                 name=canonical_name,
                 brand=brand,
                 category_id=tax_res.category_id,
-                category=tax_res.category_name or entity.category or "Guitarras Eléctricas",
+                category=tax_res.category_name,
                 part_number=mpn,
                 ean=ean,
                 picture_url=entity.picture_urls.split(",")[0] if entity.picture_urls else None,

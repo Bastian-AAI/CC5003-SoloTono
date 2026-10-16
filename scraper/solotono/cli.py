@@ -12,9 +12,11 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 import json
 from solotono.db.models import Entity, EntityHistory, Product, Store, Section, CategoryGroup, Category, Subcategory
+from sqlalchemy.orm import joinedload
+
 from solotono.db.session import get_db_session, init_db
 from solotono.matching.matcher import ProductMatcher
-from solotono.matching.taxonomy import classify_product
+from solotono.matching.taxonomy import EXACT_RAW_CATEGORY_MAP, classify_product, normalize_text
 from solotono.pipeline.sync import IngestionPipeline
 from solotono.scrapers.stores import SCRAPER_REGISTRY, get_scraper_by_slug
 
@@ -386,43 +388,118 @@ def cmd_menu(args):
             console.print(table)
 
 
+def _classify_canonical_product(prod: Product, session):
+    """Clasifica un producto canonico usando las categorias de tienda de todas sus entidades.
+
+    Se prueban primero las categorias con mapeo exacto, luego el resto; se usa la primera
+    que produzca una categoria canonica. Asi el resultado no depende del orden de entidades.
+    """
+    generic = {"instrumentos", "instrumentos musicales"}
+    raw_cats = sorted(
+        {e.category for e in prod.entities if e.category and e.category.strip().lower() not in generic},
+        key=lambda c: (normalize_text(c) not in EXACT_RAW_CATEGORY_MAP, c),
+    )
+    candidates = raw_cats + [prod.category, None]
+    res = None
+    for raw in candidates:
+        res = classify_product(prod.name, raw_category=raw, brand=prod.brand, session=session)
+        if res.is_excluded or res.category_id:
+            return res
+    return res
+
+
+def _delete_entity(session, ent: Entity) -> None:
+    ent.active_registry_id = None
+    session.flush()
+    session.delete(ent)
+
+
 def cmd_classify(args):
-    """Run taxonomic classification on store entities."""
+    """Clasifica entidades y productos canonicos en la taxonomia y elimina articulos no musicales."""
     init_db(prepopulate_stores=True, prepopulate_taxonomy=True)
+    limit = args.limit if args.limit and args.limit > 0 else None
 
     with get_db_session() as session:
-        query = session.query(Entity)
+        ent_query = session.query(Entity).order_by(Entity.id)
+        prod_query = session.query(Product).options(joinedload(Product.entities)).order_by(Product.id)
         if not args.all:
-            query = query.filter(Entity.category_id == None)
-        entities = query.limit(args.limit).all()
+            ent_query = ent_query.filter(Entity.category_id == None)
+            prod_query = prod_query.filter(Product.category_id == None)
+        if limit:
+            ent_query = ent_query.limit(limit)
+            prod_query = prod_query.limit(limit)
 
-        console.print(f"[bold cyan]Clasificando {len(entities)} entidades con el clasificador taxonómico...[/bold cyan]")
-
-        table = Table(title="Clasificación Taxonómica de Entidades", show_header=True, header_style="bold green")
-        table.add_column("ID", style="dim", justify="right")
-        table.add_column("Tienda", style="cyan")
-        table.add_column("Título Crudo")
-        table.add_column("Categoría Canónica Asignada", style="bold green")
-        table.add_column("Confianza", justify="right")
-        table.add_column("Facets / Subcats", style="yellow")
-
+        entities = ent_query.all()
+        console.print(f"[bold cyan]Clasificando {len(entities)} entidades...[/bold cyan]")
+        detail_rows = []
+        ent_stats = {"clasificadas": 0, "sin_categoria": 0, "excluidas": 0}
         for ent in entities:
             res = classify_product(ent.name, raw_category=ent.category, brand=ent.brand, session=session)
+            if res.is_excluded:
+                _delete_entity(session, ent)
+                ent_stats["excluidas"] += 1
+                continue
+            ent.category_id = res.category_id
+            ent_stats["clasificadas" if res.category_id else "sin_categoria"] += 1
+            if len(detail_rows) < 50:
+                detail_rows.append((ent, res))
+        session.flush()
+
+        products = prod_query.all()
+        console.print(f"[bold cyan]Clasificando {len(products)} productos canonicos...[/bold cyan]")
+        per_category: dict = {}
+        prod_stats = {"clasificados": 0, "sin_categoria": 0, "excluidos": 0}
+        for prod in products:
+            res = _classify_canonical_product(prod, session)
+            if res.is_excluded:
+                for ent in list(prod.entities):
+                    _delete_entity(session, ent)
+                session.delete(prod)
+                prod_stats["excluidos"] += 1
+                continue
+            prod.category_id = res.category_id
+            prod.category = res.category_name
             if res.category_id:
-                ent.category_id = res.category_id
-            subcat_str = ", ".join(res.suggested_subcategories) if res.suggested_subcategories else "-"
-            table.add_row(
-                str(ent.id),
-                ent.store.name if ent.store else "-",
-                ent.name[:38],
-                res.category_name or res.category_slug,
-                f"{res.confidence * 100:.0f}%",
-                subcat_str,
-            )
+                prod_stats["clasificados"] += 1
+                per_category[res.category_name] = per_category.get(res.category_name, 0) + 1
+            else:
+                prod_stats["sin_categoria"] += 1
 
         session.commit()
-        console.print(table)
-        console.print(f"[bold green]✓ Clasificación completada para {len(entities)} entidades.[/bold green]")
+
+        if detail_rows and len(entities) <= 50:
+            table = Table(title="Clasificacion de entidades", show_header=True, header_style="bold green")
+            table.add_column("ID", style="dim", justify="right")
+            table.add_column("Tienda", style="cyan")
+            table.add_column("Titulo")
+            table.add_column("Categoria canonica", style="bold green")
+            table.add_column("Regla", style="yellow")
+            for ent, res in detail_rows:
+                table.add_row(
+                    str(ent.id),
+                    ent.store.name if ent.store else "-",
+                    ent.name[:40],
+                    res.category_name or "-",
+                    res.matched_rule,
+                )
+            console.print(table)
+
+        if per_category:
+            summary = Table(title="Productos por categoria canonica", show_header=True, header_style="bold magenta")
+            summary.add_column("Categoria", style="cyan")
+            summary.add_column("Productos", justify="right", style="green")
+            for name, count in sorted(per_category.items(), key=lambda kv: -kv[1]):
+                summary.add_row(name, str(count))
+            console.print(summary)
+
+        console.print(
+            f"[bold green]Entidades:[/bold green] {ent_stats['clasificadas']} clasificadas, "
+            f"{ent_stats['sin_categoria']} sin categoria, {ent_stats['excluidas']} eliminadas"
+        )
+        console.print(
+            f"[bold green]Productos:[/bold green] {prod_stats['clasificados']} clasificados, "
+            f"{prod_stats['sin_categoria']} sin categoria, {prod_stats['excluidos']} eliminados"
+        )
 
 
 def main():
@@ -438,8 +515,8 @@ def main():
 
     # Command: classify
     p_classify = subparsers.add_parser("classify", help="Clasificar entidades hacia categorías canónicas")
-    p_classify.add_argument("--limit", type=int, default=50, help="Límite de entidades a clasificar")
-    p_classify.add_argument("--all", action="store_true", help="Reclasificar todas las entidades, incluso las ya asignadas")
+    p_classify.add_argument("--limit", type=int, default=50, help="Límite de entidades y productos a clasificar (0 para sin límite)")
+    p_classify.add_argument("--all", action="store_true", help="Reclasificar entidades y productos aunque ya tengan categoría")
 
     # Command: demo
     p_demo = subparsers.add_parser("demo", help="Ejecutar demo end-to-end rápido")

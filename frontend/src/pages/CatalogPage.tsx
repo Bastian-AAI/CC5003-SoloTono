@@ -22,6 +22,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import CategoryIcon from "@mui/icons-material/Category";
+import BrandingWatermarkIcon from "@mui/icons-material/BrandingWatermark";
+import LayersIcon from "@mui/icons-material/Layers";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
@@ -31,6 +34,7 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { productService } from "../services/products";
 import type { Product } from "../types/product";
+import { NAVIGATION_SECTIONS } from "../data/navigationData";
 import { ProductCard } from "../components/ProductCard";
 
 export const CatalogPage = () => {
@@ -39,6 +43,7 @@ export const CatalogPage = () => {
   // Estados de datos
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
   const [stores, setStores] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,19 +54,24 @@ export const CatalogPage = () => {
 
   // Valores de filtros sincronizados con URL Search Params
   const queryParam = searchParams.get("q") || "";
-  const sectionParam = searchParams.get("section") || "";
+  const sectionParam = searchParams.get("section") || "Todas";
+  const groupParam = searchParams.get("group") || "Todas";
   const categoryParam = searchParams.get("category") || "Todas";
+  const brandParam = searchParams.get("brand") || "Todas";
   const storeParam = searchParams.get("store") || "Todas";
   const sortParam = searchParams.get("sort") || "price_asc";
 
-  // Cargar categorías y tiendas disponibles una vez
+  // Cargar categorías, marcas y tiendas disponibles
   useEffect(() => {
-    Promise.all([productService.getCategories(), productService.getStores()]).then(
-      ([cats, sts]) => {
-        setCategories(cats);
-        setStores(sts);
-      }
-    );
+    Promise.all([
+      productService.getCategories(),
+      productService.getBrands(),
+      productService.getStores(),
+    ]).then(([cats, brs, sts]) => {
+      setCategories(cats);
+      setBrands(brs);
+      setStores(sts);
+    });
   }, []);
 
   // Cargar productos cada vez que cambien los parámetros
@@ -70,9 +80,11 @@ export const CatalogPage = () => {
     productService
       .getProducts({
         q: queryParam,
-        section: sectionParam,
-        category: categoryParam,
-        store: storeParam,
+        section: sectionParam !== "Todas" ? sectionParam : undefined,
+        group: groupParam !== "Todas" ? groupParam : undefined,
+        category: categoryParam !== "Todas" ? categoryParam : undefined,
+        brand: brandParam !== "Todas" ? brandParam : undefined,
+        store: storeParam !== "Todas" ? storeParam : undefined,
         sort: sortParam,
       })
       .then((data) => {
@@ -85,11 +97,56 @@ export const CatalogPage = () => {
     return () => {
       ignore = true;
     };
-  }, [queryParam, sectionParam, categoryParam, storeParam, sortParam]);
+  }, [queryParam, sectionParam, groupParam, categoryParam, brandParam, storeParam, sortParam]);
 
   // Paginación reactiva para grandes volúmenes de catálogo
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 24;
+
+  // Opciones dinámicas según sección y grupo seleccionados
+  const availableSections = useMemo(() => {
+    return NAVIGATION_SECTIONS.map((s) => s.title);
+  }, []);
+
+  const availableGroups = useMemo(() => {
+    if (sectionParam && sectionParam !== "Todas") {
+      const sec = NAVIGATION_SECTIONS.find(
+        (s) => s.title.toLowerCase() === sectionParam.toLowerCase() || s.id === sectionParam.toLowerCase(),
+      );
+      if (sec) {
+        return sec.columns.map((c) => c.categoryName);
+      }
+    }
+    const allGroups = new Set<string>();
+    NAVIGATION_SECTIONS.forEach((s) => s.columns.forEach((c) => allGroups.add(c.categoryName)));
+    return Array.from(allGroups);
+  }, [sectionParam]);
+
+  const availableCategories = useMemo(() => {
+    if (groupParam && groupParam !== "Todas") {
+      for (const sec of NAVIGATION_SECTIONS) {
+        const col = sec.columns.find(
+          (c) => c.categoryName.toLowerCase() === groupParam.toLowerCase() || c.groupSlug === groupParam.toLowerCase(),
+        );
+        if (col) {
+          return col.items.map((i) => i.title);
+        }
+      }
+    }
+    if (sectionParam && sectionParam !== "Todas") {
+      const sec = NAVIGATION_SECTIONS.find(
+        (s) => s.title.toLowerCase() === sectionParam.toLowerCase() || s.id === sectionParam.toLowerCase(),
+      );
+      if (sec) {
+        const catList: string[] = [];
+        sec.columns.forEach((c) => c.items.forEach((i) => catList.push(i.title)));
+        return catList;
+      }
+    }
+    return categories.length > 0
+      ? categories
+      : Array.from(new Set(NAVIGATION_SECTIONS.flatMap((s) => s.columns.flatMap((c) => c.items.map((i) => i.title)))));
+  }, [sectionParam, groupParam, categories]);
 
   // Manejadores de actualización de filtros en la URL
   const updateFilter = (key: string, value: string) => {
@@ -107,8 +164,39 @@ export const CatalogPage = () => {
     updateFilter("q", e.target.value);
   };
 
+  const handleSectionChange = (e: SelectChangeEvent<string>) => {
+    const val = e.target.value;
+    setCurrentPage(1);
+    const newParams = new URLSearchParams(searchParams);
+    if (!val || val === "Todas") {
+      newParams.delete("section");
+    } else {
+      newParams.set("section", val);
+    }
+    newParams.delete("group");
+    newParams.delete("category");
+    setSearchParams(newParams);
+  };
+
+  const handleGroupChange = (e: SelectChangeEvent<string>) => {
+    const val = e.target.value;
+    setCurrentPage(1);
+    const newParams = new URLSearchParams(searchParams);
+    if (!val || val === "Todas") {
+      newParams.delete("group");
+    } else {
+      newParams.set("group", val);
+    }
+    newParams.delete("category");
+    setSearchParams(newParams);
+  };
+
   const handleCategoryChange = (e: SelectChangeEvent<string>) => {
     updateFilter("category", e.target.value);
+  };
+
+  const handleBrandChange = (e: SelectChangeEvent<string>) => {
+    updateFilter("brand", e.target.value);
   };
 
   const handleStoreChange = (e: SelectChangeEvent<string>) => {
@@ -141,12 +229,14 @@ export const CatalogPage = () => {
   const hasActiveFilters = useMemo(() => {
     return Boolean(
       queryParam ||
-      sectionParam ||
-      !onlyInStock ||
+      (sectionParam && sectionParam !== "Todas") ||
+      (groupParam && groupParam !== "Todas") ||
       (categoryParam && categoryParam !== "Todas") ||
-      (storeParam && storeParam !== "Todas")
+      (brandParam && brandParam !== "Todas") ||
+      (storeParam && storeParam !== "Todas") ||
+      !onlyInStock
     );
-  }, [queryParam, sectionParam, categoryParam, storeParam, onlyInStock]);
+  }, [queryParam, sectionParam, groupParam, categoryParam, brandParam, storeParam, onlyInStock]);
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, minHeight: "75vh" }}>
@@ -156,7 +246,7 @@ export const CatalogPage = () => {
           Catálogo de Instrumentos Musicales
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Explora y compara ofertas entre las principales tiendas especializadas de Chile.
+          Explora y compara ofertas entre las principales tiendas especializadas de Chile con clasificación exacta.
         </Typography>
       </Box>
 
@@ -198,7 +288,7 @@ export const CatalogPage = () => {
               )}
             </Box>
 
-            <Stack spacing={3}>
+            <Stack spacing={2.5}>
               {/* Búsqueda por texto */}
               <TextField
                 label="Búsqueda libre"
@@ -220,7 +310,53 @@ export const CatalogPage = () => {
 
               <Divider />
 
-              {/* Filtro por Categoría */}
+              {/* Filtro por Sección */}
+              <FormControl fullWidth size="small">
+                <InputLabel id="section-filter-label">Sección</InputLabel>
+                <Select
+                  labelId="section-filter-label"
+                  label="Sección"
+                  value={sectionParam}
+                  onChange={handleSectionChange}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <LayersIcon fontSize="small" sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  }
+                >
+                  <MenuItem value="Todas">Todas las secciones</MenuItem>
+                  {availableSections.map((sec) => (
+                    <MenuItem key={sec} value={sec}>
+                      {sec}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Filtro por Familia / Grupo */}
+              <FormControl fullWidth size="small">
+                <InputLabel id="group-filter-label">Familia / Grupo</InputLabel>
+                <Select
+                  labelId="group-filter-label"
+                  label="Familia / Grupo"
+                  value={groupParam}
+                  onChange={handleGroupChange}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <AccountTreeIcon fontSize="small" sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  }
+                >
+                  <MenuItem value="Todas">Todas las familias</MenuItem>
+                  {availableGroups.map((grp) => (
+                    <MenuItem key={grp} value={grp}>
+                      {grp}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Filtro por Categoría Canónica */}
               <FormControl fullWidth size="small">
                 <InputLabel id="category-filter-label">Categoría</InputLabel>
                 <Select
@@ -235,9 +371,34 @@ export const CatalogPage = () => {
                   }
                 >
                   <MenuItem value="Todas">Todas las categorías</MenuItem>
-                  {categories.map((cat) => (
+                  {availableCategories.map((cat) => (
                     <MenuItem key={cat} value={cat}>
                       {cat}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Divider />
+
+              {/* Filtro por Marca */}
+              <FormControl fullWidth size="small">
+                <InputLabel id="brand-filter-label">Marca</InputLabel>
+                <Select
+                  labelId="brand-filter-label"
+                  label="Marca"
+                  value={brandParam}
+                  onChange={handleBrandChange}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <BrandingWatermarkIcon fontSize="small" sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  }
+                >
+                  <MenuItem value="Todas">Todas las marcas</MenuItem>
+                  {brands.map((br) => (
+                    <MenuItem key={br} value={br}>
+                      {br}
                     </MenuItem>
                   ))}
                 </Select>
@@ -320,13 +481,22 @@ export const CatalogPage = () => {
                         }}
                       />
                     )}
-                    {sectionParam && (
+                    {sectionParam !== "Todas" && (
                       <Chip
                         label={`Sección: ${sectionParam}`}
                         color="primary"
                         variant="outlined"
                         size="small"
-                        onDelete={() => updateFilter("section", "")}
+                        onDelete={() => updateFilter("section", "Todas")}
+                      />
+                    )}
+                    {groupParam !== "Todas" && (
+                      <Chip
+                        label={`Familia: ${groupParam}`}
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                        onDelete={() => updateFilter("group", "Todas")}
                       />
                     )}
                     {categoryParam !== "Todas" && (
@@ -334,6 +504,13 @@ export const CatalogPage = () => {
                         label={categoryParam}
                         size="small"
                         onDelete={() => updateFilter("category", "Todas")}
+                      />
+                    )}
+                    {brandParam !== "Todas" && (
+                      <Chip
+                        label={`Marca: ${brandParam}`}
+                        size="small"
+                        onDelete={() => updateFilter("brand", "Todas")}
                       />
                     )}
                     {storeParam !== "Todas" && (
@@ -380,7 +557,7 @@ export const CatalogPage = () => {
                 {displayedProducts.length > 0
                   ? `${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(
                       currentPage * ITEMS_PER_PAGE,
-                      displayedProducts.length
+                      displayedProducts.length,
                     )}`
                   : 0}
               </strong>{" "}
