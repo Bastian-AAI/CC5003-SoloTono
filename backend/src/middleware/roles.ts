@@ -1,16 +1,23 @@
 import type { NextFunction, Request, Response } from "express";
-import User from "../models/User.ts";
+import UserModel from "../models/User.ts";
 import { forbidden } from "../utils/errors.ts";
 
-// El rol se consulta en la base de datos en cada petición (no viaja en el JWT):
-// así, quitar o dar el rol de moderador surte efecto de inmediato.
-export const isModerator = async (userId: string | undefined): Promise<boolean> =>
-  userId !== undefined && (await User.exists({ _id: userId, role: "moderator" })) !== null;
+// El rol se consulta en PostgreSQL en cada petición para aplicar cambios de privilegios de inmediato.
+export const isAdmin = async (userId: string | undefined): Promise<boolean> => {
+  if (!userId) return false;
+  const numericId = Number(userId);
+  if (isNaN(numericId)) return false;
+  return UserModel.isAdminOrModerator(numericId);
+};
+
+export const isModerator = isAdmin;
 
 // Usar SIEMPRE después de withUser.
-export const withModerator = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
-  if (!(await isModerator(req.userId))) {
-    throw forbidden("moderator role required");
+export const withAdmin = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  if (!(await isAdmin(req.userId))) {
+    throw forbidden("Se requiere rol de administrador para realizar esta acción");
   }
   next();
 };
+
+export const withModerator = withAdmin;
