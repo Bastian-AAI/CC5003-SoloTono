@@ -16,58 +16,56 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import Collapse from "@mui/material/Collapse";
 import Divider from "@mui/material/Divider";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Chip from "@mui/material/Chip";
 import { alpha, styled } from "@mui/material/styles";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import LoginIcon from "@mui/icons-material/Login";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import LogoutIcon from "@mui/icons-material/Logout";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 import { useAuth } from "../hooks/useAuth";
 import { useThemeMode } from "../context/themeContext";
 import { NAVIGATION_SECTIONS, type NavSection } from "../data/navigationData";
 import { MegaMenu } from "./MegaMenu";
 
-const SearchBox = styled("form")(({ theme }) => ({
+/**
+ * Contenedor de búsqueda refinado con estética de cápsula (pill-shaped)
+ * y microinteracciones de Emil Kowalski.
+ */
+const SearchContainer = styled("form")(({ theme }) => ({
   position: "relative",
-  borderRadius: 24,
-  backgroundColor: alpha(theme.palette.text.primary, 0.05),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.text.primary, 0.09),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: theme.spacing(2),
-  width: "100%",
-  maxWidth: 280,
   display: "flex",
   alignItems: "center",
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  [theme.breakpoints.down("md")]: {
-    display: "none",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 1.5),
-  height: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: theme.palette.text.secondary,
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
   width: "100%",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(0.8, 1, 0.8, 0),
-    fontSize: "1rem", // 16px mínimo para evitar zoom en iOS Safari
+  borderRadius: 9999,
+  backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === "dark" ? 0.06 : 0.04),
+  border: `1px solid ${alpha(theme.palette.divider, theme.palette.mode === "dark" ? 0.2 : 0.18)}`,
+  transition:
+    "border-color 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease",
+  "@media (hover: hover) and (pointer: fine)": {
+    "&:hover": {
+      backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === "dark" ? 0.09 : 0.07),
+      borderColor: alpha(theme.palette.primary.main, 0.45),
+    },
+  },
+  "&:focus-within": {
+    backgroundColor: theme.palette.mode === "dark" ? "#171a23" : "#ffffff",
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.2)}`,
   },
 }));
 
@@ -78,19 +76,35 @@ export const Navbar = () => {
   const [activeSection, setActiveSection] = useState<NavSection | null>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileExpandedSection, setMobileExpandedSection] = useState<string | null>(null);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const navigate = useNavigate();
+
+  const isUserMenuOpen = Boolean(userMenuAnchor);
 
   const handleSectionToggle = (section: NavSection) => {
     setActiveSection((prev) => (prev?.id === section.id ? null : section));
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/catalogo?q=${encodeURIComponent(searchTerm.trim())}`);
+    const trimmed = searchTerm.trim();
+    if (trimmed) {
+      navigate(`/catalogo?q=${encodeURIComponent(trimmed)}`);
     } else {
       navigate("/catalogo");
     }
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+  };
+
+  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setUserMenuAnchor(null);
   };
 
   const handleMobileItemClick = (sectionTitle: string, title: string, slug?: string) => {
@@ -112,20 +126,36 @@ export const Navbar = () => {
   return (
     <Box sx={{ position: "sticky", top: 0, zIndex: 1100 }}>
       <AppBar position="static" sx={{ pt: "env(safe-area-inset-top, 0px)" }}>
+        {/* ================================================================= */}
+        {/* NIVEL 1 (Superior): Logo, Buscador Protagónico y Acciones Usuario */}
+        {/* ================================================================= */}
         <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ justifyContent: "space-between", py: 1 }}>
-            {/* Botón Hamburger para Móviles */}
+          <Toolbar
+            disableGutters
+            sx={{
+              justifyContent: "space-between",
+              alignItems: "center",
+              minHeight: { xs: 58, md: 66 },
+              gap: { xs: 1, md: 3 },
+            }}
+          >
+            {/* Botón Menú Hamburguesa para Móviles */}
             <IconButton
               color="inherit"
-              aria-label="abrir menú"
+              aria-label="abrir menú de navegación"
               edge="start"
               onClick={() => setMobileDrawerOpen(true)}
-              sx={{ mr: 1, display: { md: "none" } }}
+              sx={{
+                display: { md: "none" },
+                mr: 0.5,
+                transition: "transform 140ms cubic-bezier(0.23, 1, 0.32, 1)",
+                "&:active": { transform: "scale(0.92)" },
+              }}
             >
               <MenuIcon />
             </IconButton>
 
-            {/* Logo & Brand -> Lleva al inicio "/" */}
+            {/* Identidad de Marca: SoloTono */}
             <Box
               component={RouterLink}
               to="/"
@@ -135,15 +165,17 @@ export const Navbar = () => {
                 alignItems: "center",
                 textDecoration: "none",
                 color: "text.primary",
-                gap: 1,
-                mr: 2,
+                gap: 1.25,
+                flexShrink: 0,
+                transition: "transform 140ms cubic-bezier(0.23, 1, 0.32, 1)",
+                "&:active": { transform: "scale(0.97)" },
               }}
             >
               <Box
                 sx={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: "10px",
+                  width: { xs: 34, md: 40 },
+                  height: { xs: 34, md: 40 },
+                  borderRadius: "11px",
                   background: (theme) =>
                     `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
                   display: "flex",
@@ -151,10 +183,10 @@ export const Navbar = () => {
                   justifyContent: "center",
                   color: "#ffffff",
                   boxShadow: (theme) =>
-                    `0 4px 10px ${alpha(theme.palette.primary.main, 0.35)}`,
+                    `0 4px 12px ${alpha(theme.palette.primary.main, 0.35)}`,
                 }}
               >
-                <MusicNoteIcon />
+                <MusicNoteIcon sx={{ fontSize: { xs: "1.2rem", md: "1.45rem" } }} />
               </Box>
               <Box>
                 <Typography
@@ -162,8 +194,10 @@ export const Navbar = () => {
                   component="span"
                   sx={{
                     fontWeight: 800,
-                    fontSize: "1.25rem",
+                    fontSize: { xs: "1.15rem", md: "1.32rem" },
                     letterSpacing: "-0.5px",
+                    lineHeight: 1.1,
+                    display: "block",
                   }}
                 >
                   Solo<Box component="span" sx={{ color: "primary.main" }}>Tono</Box>
@@ -174,8 +208,10 @@ export const Navbar = () => {
                     display: "block",
                     color: "text.secondary",
                     fontSize: "0.68rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.2px",
                     lineHeight: 1,
-                    mt: -0.3,
+                    mt: 0.2,
                   }}
                 >
                   Cotizador Musical
@@ -183,129 +219,306 @@ export const Navbar = () => {
               </Box>
             </Box>
 
-            {/* Secciones Principales en Desktop: Instrumentos, Piezas y Repuestos, Equipos de sonido */}
+            {/* Buscador Central Protagónico para Desktop (formato cápsula) */}
             <Box
               sx={{
                 display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                gap: 1,
+                flex: 1,
+                maxWidth: 620,
+                mx: { md: 2, lg: 4 },
               }}
             >
-              {NAVIGATION_SECTIONS.map((sec) => {
-                const isOpen = activeSection?.id === sec.id;
-
-                return (
-                  <Button
-                    key={sec.id}
-                    onClick={() => handleSectionToggle(sec)}
-                    color="inherit"
-                    endIcon={
-                      isOpen ? (
-                        <KeyboardArrowUpIcon sx={{ color: "primary.main" }} />
-                      ) : (
-                        <KeyboardArrowDownIcon />
-                      )
-                    }
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: "0.92rem",
-                      px: 2,
+              <SearchContainer onSubmit={handleSearchSubmit}>
+                <Box
+                  sx={{
+                    pl: 2,
+                    pr: 0.5,
+                    display: "flex",
+                    alignItems: "center",
+                    color: "text.secondary",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <SearchIcon sx={{ fontSize: "1.2rem" }} />
+                </Box>
+                <InputBase
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="¿Qué instrumento o equipo estás buscando?"
+                  inputProps={{ "aria-label": "buscar en catálogo de instrumentos" }}
+                  sx={{
+                    flex: 1,
+                    color: "inherit",
+                    "& .MuiInputBase-input": {
                       py: 1,
-                      color: isOpen ? "primary.main" : "text.primary",
-                      bgcolor: isOpen ? "action.hover" : "transparent",
-                      borderRadius: 2,
-                      transition: "all 0.15s ease",
-                      "&:hover": {
-                        bgcolor: "action.hover",
-                        color: "primary.main",
+                      px: 1,
+                      fontSize: "0.94rem",
+                      "&::placeholder": {
+                        opacity: 0.7,
+                      },
+                    },
+                  }}
+                />
+                {searchTerm && (
+                  <IconButton
+                    size="small"
+                    onClick={handleClearSearch}
+                    aria-label="Limpiar término de búsqueda"
+                    sx={{
+                      p: 0.5,
+                      mr: 0.5,
+                      color: "text.secondary",
+                      transition: "color 140ms ease, transform 140ms cubic-bezier(0.23, 1, 0.32, 1)",
+                      "&:hover": { color: "text.primary" },
+                      "&:active": { transform: "scale(0.9)" },
+                    }}
+                  >
+                    <ClearIcon sx={{ fontSize: "1.1rem" }} />
+                  </IconButton>
+                )}
+                <Box sx={{ pr: 0.6, py: 0.5 }}>
+                  <IconButton
+                    type="submit"
+                    aria-label="Ejecutar búsqueda"
+                    sx={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: "50%",
+                      bgcolor: "primary.main",
+                      color: "#ffffff",
+                      boxShadow: "0 2px 6px rgba(255, 111, 0, 0.35)",
+                      transition:
+                        "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease, box-shadow 140ms ease",
+                      "@media (hover: hover) and (pointer: fine)": {
+                        "&:hover": {
+                          bgcolor: "primary.dark",
+                          boxShadow: "0 4px 10px rgba(255, 111, 0, 0.45)",
+                        },
+                      },
+                      "&:active": {
+                        transform: "scale(0.92)",
                       },
                     }}
                   >
-                    {sec.title}
-                  </Button>
-                );
-              })}
+                    <SearchIcon sx={{ fontSize: "1.15rem" }} />
+                  </IconButton>
+                </Box>
+              </SearchContainer>
             </Box>
 
-            {/* Buscador de barra rápida */}
-            <SearchBox onSubmit={handleSearchSubmit}>
-              <SearchIconWrapper>
-                <SearchIcon fontSize="small" />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Buscar instrumento, pastilla, micrófono..."
-                inputProps={{ "aria-label": "buscar en catálogo" }}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </SearchBox>
+            {/* Grupo de Utilidades y Acceso de Usuario (Extremo Derecho) */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 0.5, sm: 1 },
+                flexShrink: 0,
+              }}
+            >
+              {/* Botón Favoritos */}
+              <Tooltip title="Mis Favoritos">
+                <IconButton
+                  component={RouterLink}
+                  to="/favoritos"
+                  color="inherit"
+                  aria-label="ir a mis favoritos"
+                  sx={{
+                    transition:
+                      "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), color 140ms ease",
+                    "@media (hover: hover) and (pointer: fine)": {
+                      "&:hover": { color: "primary.main" },
+                    },
+                    "&:active": { transform: "scale(0.92)" },
+                  }}
+                >
+                  <FavoriteBorderIcon sx={{ fontSize: "1.3rem" }} />
+                </IconButton>
+              </Tooltip>
 
-            {/* Toggle Modo Oscuro / Claro y Navegación de Sesión */}
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+              {/* Botón Modo Claro/Oscuro */}
               <Tooltip title={`Cambiar a modo ${mode === "dark" ? "claro" : "oscuro"}`}>
                 <IconButton
                   onClick={toggleColorMode}
                   color="inherit"
                   aria-label="alternar modo de color"
+                  sx={{
+                    transition:
+                      "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), color 140ms ease",
+                    "&:active": { transform: "scale(0.92)" },
+                  }}
                 >
                   {mode === "dark" ? (
-                    <Brightness7Icon sx={{ color: "#ffb74d" }} />
+                    <Brightness7Icon sx={{ color: "#ffb74d", fontSize: "1.3rem" }} />
                   ) : (
-                    <Brightness4Icon sx={{ color: "#5c6bc0" }} />
+                    <Brightness4Icon sx={{ color: "#5c6bc0", fontSize: "1.3rem" }} />
                   )}
                 </IconButton>
               </Tooltip>
+
+              {/* Estado de Sesión del Usuario */}
               {user ? (
-                <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", gap: 1, ml: 1 }}>
+                <>
+                  {/* Botón de Perfil interactivo con menú */}
                   <Button
-                    component={RouterLink}
-                    to="/favoritos"
-                    variant="text"
+                    onClick={handleOpenUserMenu}
                     color="inherit"
-                    sx={{ fontWeight: 700 }}
+                    aria-label="menú de usuario"
+                    aria-controls={isUserMenuOpen ? "user-account-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={isUserMenuOpen ? "true" : undefined}
+                    startIcon={
+                      <AccountCircleIcon
+                        sx={{
+                          color: user.role === "admin" ? "primary.main" : "text.secondary",
+                          fontSize: "1.35rem !important",
+                        }}
+                      />
+                    }
+                    endIcon={
+                      <KeyboardArrowDownIcon
+                        sx={{
+                          fontSize: "1.1rem !important",
+                          transition: "transform 180ms cubic-bezier(0.23, 1, 0.32, 1)",
+                          transform: isUserMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                        }}
+                      />
+                    }
+                    sx={{
+                      display: { xs: "none", sm: "inline-flex" },
+                      fontWeight: 700,
+                      fontSize: "0.88rem",
+                      px: 1.5,
+                      py: 0.7,
+                      borderRadius: "10px",
+                      border: "1px solid",
+                      borderColor: (theme) => alpha(theme.palette.divider, 0.25),
+                      bgcolor: (theme) =>
+                        alpha(theme.palette.text.primary, theme.palette.mode === "dark" ? 0.04 : 0.03),
+                      transition:
+                        "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease",
+                      "&:active": { transform: "scale(0.97)" },
+                    }}
                   >
-                    Favoritos
-                  </Button>
-                  {(user.role === "admin" || user.role === "moderator") && (
-                    <Button
-                      component={RouterLink}
-                      to="/admin"
-                      variant="text"
-                      color="primary"
-                      sx={{ fontWeight: 700 }}
+                    <Typography
+                      variant="body2"
+                      component="span"
+                      sx={{
+                        fontWeight: 700,
+                        maxWidth: 130,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
                     >
-                      Admin
-                    </Button>
-                  )}
-                  <Typography variant="body2" sx={{ fontWeight: 600, mx: 0.5 }}>
-                    Hola, {user.name || user.username}
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    color="inherit"
-                    onClick={logout}
-                    sx={{ fontWeight: 600 }}
-                  >
-                    Cerrar Sesión
+                      {user.name || user.username}
+                    </Typography>
                   </Button>
-                </Box>
+
+                  {/* Menú contextual refinado de Usuario */}
+                  <Menu
+                    id="user-account-menu"
+                    anchorEl={userMenuAnchor}
+                    open={isUserMenuOpen}
+                    onClose={handleCloseUserMenu}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                    slotProps={{
+                      paper: {
+                        elevation: 6,
+                        sx: {
+                          minWidth: 220,
+                          mt: 1,
+                          borderRadius: "12px",
+                          border: "1px solid",
+                          borderColor: "divider",
+                          p: 0.5,
+                          boxShadow: (theme) =>
+                            theme.palette.mode === "dark"
+                              ? "0 10px 25px rgba(0,0,0,0.6)"
+                              : "0 10px 25px rgba(0,0,0,0.1)",
+                        },
+                      },
+                    }}
+                  >
+                    <Box sx={{ px: 2, py: 1.5 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                        {user.name || user.username}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                        @{user.username}
+                      </Typography>
+                      {user.role && user.role !== "user" && (
+                        <Chip
+                          label={user.role === "admin" ? "Administrador" : "Moderador"}
+                          size="small"
+                          color="primary"
+                          sx={{ mt: 0.8, height: 20, fontSize: "0.68rem", fontWeight: 700 }}
+                        />
+                      )}
+                    </Box>
+                    <Divider sx={{ my: 0.5 }} />
+                    <MenuItem
+                      component={RouterLink}
+                      to="/favoritos"
+                      onClick={handleCloseUserMenu}
+                      sx={{ borderRadius: "8px", py: 1, gap: 1.5 }}
+                    >
+                      <FavoriteBorderIcon fontSize="small" sx={{ color: "text.secondary" }} />
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Mis Favoritos
+                      </Typography>
+                    </MenuItem>
+                    {(user.role === "admin" || user.role === "moderator") && (
+                      <MenuItem
+                        component={RouterLink}
+                        to="/admin"
+                        onClick={handleCloseUserMenu}
+                        sx={{ borderRadius: "8px", py: 1, gap: 1.5 }}
+                      >
+                        <AdminPanelSettingsIcon fontSize="small" sx={{ color: "primary.main" }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          Panel de Administración
+                        </Typography>
+                      </MenuItem>
+                    )}
+                    <Divider sx={{ my: 0.5 }} />
+                    <MenuItem
+                      onClick={() => {
+                        handleCloseUserMenu();
+                        logout();
+                      }}
+                      sx={{ borderRadius: "8px", py: 1, gap: 1.5, color: "error.main" }}
+                    >
+                      <LogoutIcon fontSize="small" />
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        Cerrar Sesión
+                      </Typography>
+                    </MenuItem>
+                  </Menu>
+                </>
               ) : (
-                <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 1, ml: 1 }}>
-                  <Button
-                    component={RouterLink}
-                    to="/favoritos"
-                    variant="text"
-                    color="inherit"
-                    sx={{ fontWeight: 600 }}
-                  >
-                    Favoritos
-                  </Button>
+                <Box
+                  sx={{
+                    display: { xs: "none", sm: "flex" },
+                    alignItems: "center",
+                    gap: 1,
+                    ml: 0.5,
+                  }}
+                >
                   <Button
                     component={RouterLink}
                     to="/login"
                     variant="text"
                     color="inherit"
-                    sx={{ fontWeight: 600 }}
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: "0.88rem",
+                      px: 1.8,
+                      borderRadius: "8px",
+                      transition:
+                        "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease",
+                      "&:active": { transform: "scale(0.97)" },
+                    }}
                   >
                     Ingresar
                   </Button>
@@ -316,6 +529,20 @@ export const Navbar = () => {
                     color="primary"
                     sx={{
                       fontWeight: 700,
+                      fontSize: "0.88rem",
+                      px: 2,
+                      borderRadius: "8px",
+                      boxShadow: "0 2px 8px rgba(255, 111, 0, 0.28)",
+                      transition:
+                        "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease, box-shadow 140ms ease",
+                      "@media (hover: hover) and (pointer: fine)": {
+                        "&:hover": {
+                          boxShadow: "0 4px 12px rgba(255, 111, 0, 0.38)",
+                        },
+                      },
+                      "&:active": {
+                        transform: "scale(0.97)",
+                      },
                     }}
                   >
                     Registrarse
@@ -325,15 +552,190 @@ export const Navbar = () => {
             </Box>
           </Toolbar>
         </Container>
+
+        {/* ================================================================= */}
+        {/* BUSCADOR MÓVIL DIRECTO (Accesible en pantalla pequeña sin abrir cajón) */}
+        {/* ================================================================= */}
+        <Box
+          sx={{
+            display: { xs: "block", md: "none" },
+            px: 2,
+            pb: 1.25,
+            pt: 0.25,
+          }}
+        >
+          <SearchContainer onSubmit={handleSearchSubmit}>
+            <Box
+              sx={{
+                pl: 1.5,
+                pr: 0.5,
+                display: "flex",
+                alignItems: "center",
+                color: "text.secondary",
+                pointerEvents: "none",
+              }}
+            >
+              <SearchIcon sx={{ fontSize: "1.1rem" }} />
+            </Box>
+            <InputBase
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar instrumentos, piezas, marcas..."
+              inputProps={{ "aria-label": "buscar en catálogo" }}
+              sx={{
+                flex: 1,
+                color: "inherit",
+                "& .MuiInputBase-input": {
+                  py: 0.8,
+                  px: 0.8,
+                  fontSize: "1rem", // 16px para evitar zoom en iOS
+                },
+              }}
+            />
+            {searchTerm && (
+              <IconButton
+                size="small"
+                onClick={handleClearSearch}
+                aria-label="Limpiar búsqueda"
+                sx={{ p: 0.5, mr: 0.5, color: "text.secondary" }}
+              >
+                <ClearIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
+            )}
+            <Box sx={{ pr: 0.5, py: 0.4 }}>
+              <IconButton
+                type="submit"
+                aria-label="Buscar"
+                sx={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  bgcolor: "primary.main",
+                  color: "#ffffff",
+                  "&:active": { transform: "scale(0.92)" },
+                }}
+              >
+                <SearchIcon sx={{ fontSize: "1rem" }} />
+              </IconButton>
+            </Box>
+          </SearchContainer>
+        </Box>
+
+        {/* ================================================================= */}
+        {/* NIVEL 2 (Inferior): Categorías (MegaMenu) y Accesos de Catálogo   */}
+        {/* ================================================================= */}
+        <Box
+          sx={{
+            display: { xs: "none", md: "block" },
+            borderTop: "1px solid",
+            borderColor: (theme) => alpha(theme.palette.divider, 0.1),
+          }}
+        >
+          <Container maxWidth="lg">
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                minHeight: 44,
+                py: 0.4,
+              }}
+            >
+              {/* Secciones de Categorías con despliegue de MegaMenu */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {NAVIGATION_SECTIONS.map((sec) => {
+                  const isOpen = activeSection?.id === sec.id;
+
+                  return (
+                    <Button
+                      key={sec.id}
+                      onClick={() => handleSectionToggle(sec)}
+                      color="inherit"
+                      endIcon={
+                        <KeyboardArrowDownIcon
+                          sx={{
+                            fontSize: "1.15rem",
+                            transition: "transform 180ms cubic-bezier(0.23, 1, 0.32, 1)",
+                            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                            color: isOpen ? "primary.main" : "text.secondary",
+                          }}
+                        />
+                      }
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: "0.88rem",
+                        px: 1.7,
+                        py: 0.65,
+                        color: isOpen ? "primary.main" : "text.primary",
+                        bgcolor: isOpen
+                          ? (theme) =>
+                              alpha(
+                                theme.palette.primary.main,
+                                theme.palette.mode === "dark" ? 0.14 : 0.08,
+                              )
+                          : "transparent",
+                        borderRadius: "8px",
+                        transition:
+                          "background-color 140ms ease, color 140ms ease, transform 140ms cubic-bezier(0.23, 1, 0.32, 1)",
+                        "@media (hover: hover) and (pointer: fine)": {
+                          "&:hover": {
+                            bgcolor: (theme) => alpha(theme.palette.action.hover, 0.8),
+                            color: "primary.main",
+                          },
+                        },
+                        "&:active": {
+                          transform: "scale(0.97)",
+                        },
+                      }}
+                    >
+                      {sec.title}
+                    </Button>
+                  );
+                })}
+              </Box>
+
+              {/* Accesos rápidos: Catálogo Completo y Ofertas */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Button
+                  component={RouterLink}
+                  to="/catalogo"
+                  onClick={() => setActiveSection(null)}
+                  startIcon={<StorefrontIcon sx={{ fontSize: "1.05rem !important", color: "text.secondary" }} />}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: "0.86rem",
+                    color: "text.secondary",
+                    px: 1.5,
+                    py: 0.6,
+                    borderRadius: "8px",
+                    transition:
+                      "color 140ms ease, transform 140ms cubic-bezier(0.23, 1, 0.32, 1)",
+                    "@media (hover: hover) and (pointer: fine)": {
+                      "&:hover": {
+                        color: "text.primary",
+                        bgcolor: "transparent",
+                      },
+                    },
+                    "&:active": {
+                      transform: "scale(0.97)",
+                    },
+                  }}
+                >
+                  Catálogo Completo
+                </Button>
+              </Box>
+            </Box>
+          </Container>
+        </Box>
       </AppBar>
 
-      {/* Mega Menú desplegable para Desktop */}
+      {/* Mega Menú desplegable para Desktop (posicionado inmediatamente bajo el AppBar) */}
       <MegaMenu
         section={activeSection}
         onClose={() => setActiveSection(null)}
       />
 
-      {/* Drawer para Móviles / Tablets */}
+      {/* Drawer Lateral para Dispositivos Móviles */}
       <Drawer
         anchor="left"
         open={mobileDrawerOpen}
@@ -357,50 +759,78 @@ export const Navbar = () => {
           },
         }}
       >
+        {/* Cabecera del Drawer */}
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <MusicNoteIcon sx={{ color: "primary.main" }} />
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+            <Box
+              sx={{
+                width: 30,
+                height: 30,
+                borderRadius: "8px",
+                background: (theme) =>
+                  `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#ffffff",
+              }}
+            >
+              <MusicNoteIcon sx={{ fontSize: "1.1rem" }} />
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, fontSize: "1.15rem" }}>
               Solo<Box component="span" sx={{ color: "primary.main" }}>Tono</Box>
             </Typography>
           </Box>
-          <IconButton onClick={() => setMobileDrawerOpen(false)} size="small" aria-label="cerrar menú">
+          <IconButton
+            onClick={() => setMobileDrawerOpen(false)}
+            size="small"
+            aria-label="cerrar menú"
+            sx={{
+              transition: "transform 140ms cubic-bezier(0.23, 1, 0.32, 1)",
+              "&:active": { transform: "scale(0.9)" },
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
 
         <Divider sx={{ mb: 2 }} />
 
-        {/* Buscador en Drawer Móvil */}
-        <Box component="form" onSubmit={handleSearchSubmit} sx={{ mb: 2 }}>
-          <StyledInputBase
-            placeholder="Buscar en catálogo..."
-            inputProps={{ "aria-label": "Buscar en catálogo" }}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{
-              border: 1,
-              borderColor: "divider",
-              borderRadius: 2,
-              px: 1.5,
-              py: 0.5,
-              width: "100%",
-            }}
-          />
-        </Box>
-
+        {/* Sección de Sesión en el Drawer */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
           {user ? (
             <>
-              <Typography variant="body2" sx={{ fontWeight: 600, px: 1, py: 0.5 }}>
-                Conectado como: {user.name || user.username}
-              </Typography>
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  bgcolor: (theme) => alpha(theme.palette.text.primary, 0.04),
+                  mb: 0.5,
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                  {user.name || user.username}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  @{user.username}
+                </Typography>
+                {user.role && user.role !== "user" && (
+                  <Chip
+                    label={user.role === "admin" ? "Admin" : "Moderador"}
+                    size="small"
+                    color="primary"
+                    sx={{ ml: 1, height: 18, fontSize: "0.62rem", fontWeight: 700 }}
+                  />
+                )}
+              </Box>
               <Button
                 component={RouterLink}
                 to="/favoritos"
                 variant="outlined"
                 fullWidth
+                startIcon={<FavoriteBorderIcon />}
                 onClick={() => setMobileDrawerOpen(false)}
+                sx={{ borderRadius: "8px", fontWeight: 600 }}
               >
                 Mis Favoritos
               </Button>
@@ -411,7 +841,9 @@ export const Navbar = () => {
                   variant="outlined"
                   color="primary"
                   fullWidth
+                  startIcon={<AdminPanelSettingsIcon />}
                   onClick={() => setMobileDrawerOpen(false)}
+                  sx={{ borderRadius: "8px", fontWeight: 600 }}
                 >
                   Panel de Administración
                 </Button>
@@ -420,10 +852,12 @@ export const Navbar = () => {
                 variant="outlined"
                 color="error"
                 fullWidth
+                startIcon={<LogoutIcon />}
                 onClick={() => {
                   logout();
                   setMobileDrawerOpen(false);
                 }}
+                sx={{ borderRadius: "8px", fontWeight: 600 }}
               >
                 Cerrar Sesión
               </Button>
@@ -435,9 +869,11 @@ export const Navbar = () => {
                 to="/favoritos"
                 variant="outlined"
                 fullWidth
+                startIcon={<FavoriteBorderIcon />}
                 onClick={() => setMobileDrawerOpen(false)}
+                sx={{ borderRadius: "8px", fontWeight: 600 }}
               >
-                Favoritos
+                Mis Favoritos
               </Button>
               <Button
                 component={RouterLink}
@@ -446,6 +882,7 @@ export const Navbar = () => {
                 fullWidth
                 startIcon={<LoginIcon />}
                 onClick={() => setMobileDrawerOpen(false)}
+                sx={{ borderRadius: "8px", fontWeight: 600 }}
               >
                 Iniciar Sesión
               </Button>
@@ -457,7 +894,7 @@ export const Navbar = () => {
                 fullWidth
                 startIcon={<PersonAddIcon />}
                 onClick={() => setMobileDrawerOpen(false)}
-                sx={{ fontWeight: 700 }}
+                sx={{ borderRadius: "8px", fontWeight: 700 }}
               >
                 Crear Cuenta
               </Button>
@@ -467,21 +904,59 @@ export const Navbar = () => {
 
         <Divider sx={{ mb: 2 }} />
 
+        {/* Accesos directos a Catálogo y Ofertas en móvil */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 2 }}>
+          <Button
+            component={RouterLink}
+            to="/catalogo"
+            fullWidth
+            startIcon={<StorefrontIcon />}
+            onClick={() => setMobileDrawerOpen(false)}
+            sx={{
+              justifyContent: "flex-start",
+              px: 1.5,
+              py: 1,
+              fontWeight: 600,
+              fontSize: "0.92rem",
+              borderRadius: 2,
+            }}
+          >
+            Catálogo Completo
+          </Button>
+        </Box>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Acordeón de Categorías del Catálogo */}
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 800,
+            color: "text.secondary",
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+            px: 1,
+            mb: 1,
+            display: "block",
+          }}
+        >
+          Categorías
+        </Typography>
         <List disablePadding>
           {NAVIGATION_SECTIONS.map((sec) => {
             const isExpanded = mobileExpandedSection === sec.id;
 
             return (
-              <Box key={sec.id} sx={{ mb: 1 }}>
+              <Box key={sec.id} sx={{ mb: 0.5 }}>
                 <ListItemButton
                   onClick={() =>
                     setMobileExpandedSection(isExpanded ? null : sec.id)
                   }
-                  sx={{ borderRadius: 2 }}
+                  sx={{ borderRadius: 2, py: 0.9 }}
                 >
                   <ListItemText
                     primary={
-                      <Typography sx={{ fontWeight: 700, fontSize: "0.95rem" }}>
+                      <Typography sx={{ fontWeight: 700, fontSize: "0.93rem" }}>
                         {sec.title}
                       </Typography>
                     }
@@ -495,12 +970,12 @@ export const Navbar = () => {
                       <Box key={col.categoryName} sx={{ my: 1.5 }}>
                         <Typography
                           variant="caption"
-                          sx={{ fontWeight: 700, color: "text.primary", display: "block" }}
+                          sx={{ fontWeight: 800, color: "text.primary", display: "block", mb: 0.5 }}
                         >
                           {col.categoryName}
                         </Typography>
                         {col.items.map((item) => (
-                          <ListItem key={item.title} disablePadding sx={{ py: 0.3 }}>
+                          <ListItem key={item.title} disablePadding sx={{ py: 0.2 }}>
                             <ListItemButton
                               onClick={() => handleMobileItemClick(sec.title, item.title, item.slug)}
                               sx={{ py: 0.4, px: 1, borderRadius: 1 }}
@@ -520,7 +995,7 @@ export const Navbar = () => {
                             </ListItemButton>
                           </ListItem>
                         ))}
-                        <ListItem disablePadding sx={{ py: 0.3 }}>
+                        <ListItem disablePadding sx={{ py: 0.2 }}>
                           <ListItemButton
                             onClick={() => handleMobileCategoryAllClick(sec.title, col.categoryName, col.groupSlug)}
                             sx={{ py: 0.4, px: 1, borderRadius: 1 }}

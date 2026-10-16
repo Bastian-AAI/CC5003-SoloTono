@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -53,6 +54,18 @@ interface Props {
 export const MegaMenu = ({ section, onClose }: Props) => {
   const navigate = useNavigate();
   const isDark = useTheme().palette.mode === "dark";
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   if (!section) return null;
 
@@ -153,7 +166,7 @@ export const MegaMenu = ({ section, onClose }: Props) => {
             </Typography>
           </Box>
 
-          {/* Columnas estilo SoloTodo */}
+          {/* Columnas de categorías */}
           <Box
             sx={{
               display: "grid",
