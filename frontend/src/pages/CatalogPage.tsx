@@ -318,15 +318,29 @@ export const CatalogPage = () => {
                   label="Sección"
                   value={sectionParam}
                   onChange={handleSectionChange}
+                  sx={{
+                    fontSize: "0.85rem",
+                    "& .MuiSelect-select": {
+                      display: "flex",
+                      alignItems: "center",
+                      py: 1,
+                      pl: 0.5,
+                      pr: "28px !important",
+                      fontSize: "0.84rem",
+                    },
+                    "& .MuiInputAdornment-root": {
+                      mr: 0.5,
+                    },
+                  }}
                   startAdornment={
                     <InputAdornment position="start">
                       <LayersIcon fontSize="small" sx={{ color: "text.secondary" }} />
                     </InputAdornment>
                   }
                 >
-                  <MenuItem value="Todas">Todas las secciones</MenuItem>
+                  <MenuItem value="Todas" sx={{ fontSize: "0.85rem" }}>Todas las secciones</MenuItem>
                   {availableSections.map((sec) => (
-                    <MenuItem key={sec} value={sec}>
+                    <MenuItem key={sec} value={sec} sx={{ fontSize: "0.85rem" }}>
                       {sec}
                     </MenuItem>
                   ))}
@@ -341,15 +355,29 @@ export const CatalogPage = () => {
                   label="Familia / Grupo"
                   value={groupParam}
                   onChange={handleGroupChange}
+                  sx={{
+                    fontSize: "0.85rem",
+                    "& .MuiSelect-select": {
+                      display: "flex",
+                      alignItems: "center",
+                      py: 1,
+                      pl: 0.5,
+                      pr: "28px !important",
+                      fontSize: "0.84rem",
+                    },
+                    "& .MuiInputAdornment-root": {
+                      mr: 0.5,
+                    },
+                  }}
                   startAdornment={
                     <InputAdornment position="start">
                       <AccountTreeIcon fontSize="small" sx={{ color: "text.secondary" }} />
                     </InputAdornment>
                   }
                 >
-                  <MenuItem value="Todas">Todas las familias</MenuItem>
+                  <MenuItem value="Todas" sx={{ fontSize: "0.85rem" }}>Todas las familias</MenuItem>
                   {availableGroups.map((grp) => (
-                    <MenuItem key={grp} value={grp}>
+                    <MenuItem key={grp} value={grp} sx={{ fontSize: "0.85rem" }}>
                       {grp}
                     </MenuItem>
                   ))}
@@ -364,15 +392,29 @@ export const CatalogPage = () => {
                   label="Categoría"
                   value={categoryParam}
                   onChange={handleCategoryChange}
+                  sx={{
+                    fontSize: "0.85rem",
+                    "& .MuiSelect-select": {
+                      display: "flex",
+                      alignItems: "center",
+                      py: 1,
+                      pl: 0.5,
+                      pr: "28px !important",
+                      fontSize: "0.84rem",
+                    },
+                    "& .MuiInputAdornment-root": {
+                      mr: 0.5,
+                    },
+                  }}
                   startAdornment={
                     <InputAdornment position="start">
                       <CategoryIcon fontSize="small" sx={{ color: "text.secondary" }} />
                     </InputAdornment>
                   }
                 >
-                  <MenuItem value="Todas">Todas las categorías</MenuItem>
+                  <MenuItem value="Todas" sx={{ fontSize: "0.85rem" }}>Todas las categorías</MenuItem>
                   {availableCategories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>
+                    <MenuItem key={cat} value={cat} sx={{ fontSize: "0.85rem" }}>
                       {cat}
                     </MenuItem>
                   ))}
@@ -389,15 +431,29 @@ export const CatalogPage = () => {
                   label="Marca"
                   value={brandParam}
                   onChange={handleBrandChange}
+                  sx={{
+                    fontSize: "0.85rem",
+                    "& .MuiSelect-select": {
+                      display: "flex",
+                      alignItems: "center",
+                      py: 1,
+                      pl: 0.5,
+                      pr: "28px !important",
+                      fontSize: "0.84rem",
+                    },
+                    "& .MuiInputAdornment-root": {
+                      mr: 0.5,
+                    },
+                  }}
                   startAdornment={
                     <InputAdornment position="start">
                       <BrandingWatermarkIcon fontSize="small" sx={{ color: "text.secondary" }} />
                     </InputAdornment>
                   }
                 >
-                  <MenuItem value="Todas">Todas las marcas</MenuItem>
+                  <MenuItem value="Todas" sx={{ fontSize: "0.85rem" }}>Todas las marcas</MenuItem>
                   {brands.map((br) => (
-                    <MenuItem key={br} value={br}>
+                    <MenuItem key={br} value={br} sx={{ fontSize: "0.85rem" }}>
                       {br}
                     </MenuItem>
                   ))}
@@ -412,15 +468,29 @@ export const CatalogPage = () => {
                   label="Tienda"
                   value={storeParam}
                   onChange={handleStoreChange}
+                  sx={{
+                    fontSize: "0.85rem",
+                    "& .MuiSelect-select": {
+                      display: "flex",
+                      alignItems: "center",
+                      py: 1,
+                      pl: 0.5,
+                      pr: "28px !important",
+                      fontSize: "0.84rem",
+                    },
+                    "& .MuiInputAdornment-root": {
+                      mr: 0.5,
+                    },
+                  }}
                   startAdornment={
                     <InputAdornment position="start">
                       <StorefrontIcon fontSize="small" sx={{ color: "text.secondary" }} />
                     </InputAdornment>
                   }
                 >
-                  <MenuItem value="Todas">Todas las tiendas</MenuItem>
+                  <MenuItem value="Todas" sx={{ fontSize: "0.85rem" }}>Todas las tiendas</MenuItem>
                   {stores.map((store) => (
-                    <MenuItem key={store} value={store}>
+                    <MenuItem key={store} value={store} sx={{ fontSize: "0.85rem" }}>
                       {store}
                     </MenuItem>
                   ))}
@@ -652,7 +722,7 @@ export const CatalogPage = () => {
                       md: viewMode === "grid" ? 4 : 12,
                     }}
                   >
-                    <ProductCard product={product} />
+                    <ProductCard product={product} variant={viewMode} />
                   </Grid>
                 ))}
               </Grid>

@@ -255,6 +255,59 @@ export const ensureSchema = async (): Promise<void> => {
     );
   }
 
+  // Asegurar semillas iniciales de favoritos para ranking de productos destacados
+  const favCountRes = await query<{ count: string }>("SELECT COUNT(*)::text AS count FROM favorites");
+  if (Number(favCountRes.rows[0]?.count ?? 0) < 15) {
+    const communityUsernames = [
+      "carlos_guitar",
+      "matias_drums",
+      "sofia_keys",
+      "valentina_bass",
+      "felipe_audio",
+      "camila_sound",
+      "diego_riffs",
+      "lucas_music",
+      "ignacio_tone",
+      "javiera_strings",
+    ];
+    const userIds: number[] = [];
+    const dummyHash = await bcrypt.hash("solotono2026", 10);
+    for (const u of communityUsernames) {
+      const uRes = await query<{ id: number }>(
+        `INSERT INTO users (username, name, password_hash, role, created_at, updated_at)
+         VALUES ($1, $2, $3, 'user', NOW() AT TIME ZONE 'utc', NOW() AT TIME ZONE 'utc')
+         ON CONFLICT (username) DO UPDATE SET username = EXCLUDED.username
+         RETURNING id`,
+        [u, u.replace("_", " "), dummyHash],
+      );
+      if (uRes.rows[0]?.id) userIds.push(uRes.rows[0].id);
+    }
+
+    const topProds = await query<{ id: number }>(`
+      SELECT p.id
+      FROM products p
+      JOIN entities e ON e.product_id = p.id AND e.is_active = true
+      JOIN entity_histories eh ON e.active_registry_id = eh.id
+      WHERE eh.is_available = true AND eh.offer_price > 20000 AND p.picture_url IS NOT NULL AND p.picture_url != ''
+      GROUP BY p.id
+      ORDER BY p.id ASC
+      LIMIT 9
+    `);
+
+    for (let i = 0; i < topProds.rows.length; i++) {
+      const prodId = topProds.rows[i].id;
+      const howMany = Math.min(userIds.length, 10 - i);
+      for (let j = 0; j < howMany; j++) {
+        await query(
+          `INSERT INTO favorites (user_id, product_id, notes, created_at)
+           VALUES ($1, $2, 'Destacado por la comunidad', NOW() AT TIME ZONE 'utc')
+           ON CONFLICT (user_id, product_id) DO NOTHING`,
+          [userIds[j], prodId],
+        );
+      }
+    }
+  }
+
   schemaInitialized = true;
 };
 

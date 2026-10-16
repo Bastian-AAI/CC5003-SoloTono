@@ -277,12 +277,16 @@ export const ProductDetailPage = () => {
               display: "flex",
               flexWrap: "wrap",
               alignItems: "center",
-              columnGap: 2,
-              rowGap: 0.25,
-              px: 1.5,
-              py: 1,
-              borderRadius: "10px",
-              borderColor: "primary.main",
+              columnGap: 2.5,
+              rowGap: 1,
+              px: 2,
+              py: 1.5,
+              borderRadius: "12px",
+              borderColor: alpha(theme.palette.primary.main, 0.45),
+              boxShadow:
+                theme.palette.mode === "dark"
+                  ? "0 4px 20px -2px rgba(255, 107, 0, 0.16), 0 0 0 1px rgba(255, 107, 0, 0.1)"
+                  : "0 4px 20px -2px rgba(255, 107, 0, 0.08), 0 0 0 1px rgba(255, 107, 0, 0.08)",
               // Tinte naranja sobre fondo sólido, para que no se vea la cuadrícula detrás
               bgcolor: "background.paper",
               backgroundImage: `linear-gradient(${alpha(theme.palette.primary.main, 0.07)}, ${alpha(theme.palette.primary.main, 0.07)})`,
@@ -292,7 +296,7 @@ export const ProductDetailPage = () => {
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ display: "block", lineHeight: 1.2 }}
+                sx={{ display: "block", lineHeight: 1.2, fontWeight: 600 }}
               >
                 {inStockStores.length > 0 && product.minPrice > 0 ? "Mejor precio encontrado" : "Disponibilidad"}
               </Typography>
@@ -323,7 +327,13 @@ export const ProductDetailPage = () => {
               startIcon={isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
               disabled={favLoading}
               onClick={handleToggleFavorite}
-              sx={{ ml: "auto", fontWeight: 700 }}
+              sx={{
+                ml: "auto",
+                fontWeight: 700,
+                borderRadius: "8px",
+                transition: "all 160ms cubic-bezier(0.16, 1, 0.3, 1)",
+                "&:active": { transform: "scale(0.96)" },
+              }}
             >
               {isFavorite ? "En Favoritos" : "Guardar en Favoritos"}
             </Button>

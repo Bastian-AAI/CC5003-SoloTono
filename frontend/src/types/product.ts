@@ -22,6 +22,7 @@ export interface Product {
   description: string;
   minPrice: number;
   offers: StoreOffer[];
+  favoritesCount?: number;
 }
 
 export interface ProductFilterParams {

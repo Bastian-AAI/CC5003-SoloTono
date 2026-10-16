@@ -24,6 +24,7 @@ export interface IProduct {
   description: string;
   minPrice: number;
   offers: IStoreOfferSummary[];
+  favoritesCount: number;
 }
 
 export interface IPriceHistoryPoint {
@@ -45,6 +46,7 @@ export interface ProductFilterOptions {
   q?: string;
   sort?: string;
   in_stock?: string;
+  limit?: number;
 }
 
 interface RawProductRow {
@@ -61,6 +63,7 @@ interface RawProductRow {
   description: string | null;
   offers: IStoreOfferSummary[] | null;
   min_price: number;
+  favorites_count?: number | string | null;
 }
 
 const mapProductRow = (row: RawProductRow): IProduct => ({
@@ -79,6 +82,7 @@ const mapProductRow = (row: RawProductRow): IProduct => ({
     `Instrumento musical ${row.brand} ${row.name}. Consulta ofertas en tiendas asociadas.`,
   minPrice: row.min_price,
   offers: row.offers || [],
+  favoritesCount: Number(row.favorites_count ?? 0),
 });
 
 export const ProductModel = {
@@ -172,7 +176,11 @@ export const ProductModel = {
       orderByClause = "ORDER BY min_price DESC NULLS LAST, id DESC";
     } else if (sort === "name_asc") {
       orderByClause = "ORDER BY name ASC";
+    } else if (sort === "favorites_desc") {
+      orderByClause = "ORDER BY favorites_count DESC, min_price ASC NULLS LAST, id DESC";
     }
+
+    const limitClause = filters.limit ? `LIMIT ${Number(filters.limit)}` : "";
 
     const sql = `
       WITH product_summaries AS (
@@ -209,7 +217,8 @@ export const ProductModel = {
             MIN(CASE WHEN eh.is_available = true THEN eh.offer_price ELSE NULL END),
             MIN(eh.offer_price),
             0
-          )::float AS min_price
+          )::float AS min_price,
+          (SELECT COUNT(*)::int FROM favorites f WHERE f.product_id = p.id) AS favorites_count
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN category_groups cg ON c.group_id = cg.id
@@ -222,10 +231,19 @@ export const ProductModel = {
       )
       SELECT * FROM product_summaries
       ${orderByClause}
+      ${limitClause}
     `;
 
     const result = await query<RawProductRow>(sql, params);
     return result.rows.map(mapProductRow);
+  },
+
+  findTopFavorited: async (limit = 9): Promise<IProduct[]> => {
+    return ProductModel.findAll({
+      sort: "favorites_desc",
+      in_stock: "true",
+      limit,
+    });
   },
 
   findById: async (id: number): Promise<IProduct | null> => {
@@ -263,7 +281,8 @@ export const ProductModel = {
           MIN(CASE WHEN eh.is_available = true THEN eh.offer_price ELSE NULL END),
           MIN(eh.offer_price),
           0
-        )::float AS min_price
+        )::float AS min_price,
+        (SELECT COUNT(*)::int FROM favorites f WHERE f.product_id = p.id) AS favorites_count
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       LEFT JOIN category_groups cg ON c.group_id = cg.id

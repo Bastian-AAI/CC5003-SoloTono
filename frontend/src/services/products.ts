@@ -26,6 +26,19 @@ export const productService = {
     }
   },
 
+  // Obtener los productos más guardados en favoritos con stock activo
+  getTopFavorited: async (limit = 9): Promise<Product[]> => {
+    try {
+      const response = await axios.get<Product[]>(`${API_BASE_URL}/products/top-favorites`, {
+        params: { limit },
+      });
+      return response.data;
+    } catch {
+      const all = await productService.getProducts({ in_stock: "true" });
+      return all.slice(0, limit);
+    }
+  },
+
   // Obtener producto por ID
   getProductById: async (id: string): Promise<Product> => {
     try {

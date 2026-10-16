@@ -13,6 +13,14 @@ router.get("/brands", async (_req: Request, res: Response) => {
   res.json(brands);
 });
 
+// GET /api/products/top-favorites - Productos más guardados en favoritos con stock activo
+router.get("/top-favorites", async (req: Request, res: Response) => {
+  const limitParam = req.query.limit ? Number(req.query.limit) : 9;
+  const limit = isNaN(limitParam) || limitParam <= 0 ? 9 : limitParam;
+  const products = await ProductModel.findTopFavorited(limit);
+  res.json(products);
+});
+
 // GET /api/products - Listar productos con filtros opcionales
 router.get("/", async (req: Request, res: Response) => {
   const { category, section, group, brand, store, q, sort, in_stock } = req.query;
