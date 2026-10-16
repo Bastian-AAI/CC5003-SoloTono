@@ -10,6 +10,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import CircularProgress from "@mui/material/CircularProgress";
+import Pagination from "@mui/material/Pagination";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
@@ -43,7 +44,8 @@ export const CatalogPage = () => {
 
   // Estados de interacción local (Cambio de vista y Filtro reactivo de stock)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [onlyInStock, setOnlyInStock] = useState(false);
+  // Por defecto, la vista del catálogo muestra SOLO productos con stock disponible
+  const [onlyInStock, setOnlyInStock] = useState<boolean>(searchParams.get("in_stock") !== "false");
 
   // Valores de filtros sincronizados con URL Search Params
   const queryParam = searchParams.get("q") || "";
@@ -85,8 +87,13 @@ export const CatalogPage = () => {
     };
   }, [queryParam, sectionParam, categoryParam, storeParam, sortParam]);
 
+  // Paginación reactiva para grandes volúmenes de catálogo
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 24;
+
   // Manejadores de actualización de filtros en la URL
   const updateFilter = (key: string, value: string) => {
+    setCurrentPage(1);
     const newParams = new URLSearchParams(searchParams);
     if (!value || value === "Todas") {
       newParams.delete(key);
@@ -113,21 +120,29 @@ export const CatalogPage = () => {
   };
 
   const handleResetFilters = () => {
-    setOnlyInStock(false);
+    setOnlyInStock(true);
+    setCurrentPage(1);
     setSearchParams(new URLSearchParams());
   };
 
-  // Filtrado reactivo en cliente con estado local useState
+  // Filtrado reactivo en cliente con estado local (por defecto sólo productos en stock y con precio > 0)
   const displayedProducts = useMemo(() => {
     if (!onlyInStock) return products;
-    return products.filter((p) => p.offers.some((o) => o.inStock));
+    return products.filter((p) => p.minPrice > 0 && p.offers.some((o) => o.inStock));
   }, [products, onlyInStock]);
+
+  const totalPages = Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+    return displayedProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [displayedProducts, safePage]);
 
   const hasActiveFilters = useMemo(() => {
     return Boolean(
       queryParam ||
       sectionParam ||
-      onlyInStock ||
+      !onlyInStock ||
       (categoryParam && categoryParam !== "Todas") ||
       (storeParam && storeParam !== "Todas")
     );
@@ -258,7 +273,17 @@ export const CatalogPage = () => {
                 control={
                   <Switch
                     checked={onlyInStock}
-                    onChange={(e) => setOnlyInStock(e.target.checked)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setOnlyInStock(checked);
+                      const newParams = new URLSearchParams(searchParams);
+                      if (!checked) {
+                        newParams.set("in_stock", "false");
+                      } else {
+                        newParams.delete("in_stock");
+                      }
+                      setSearchParams(newParams);
+                    }}
                     color="primary"
                     size="small"
                   />
@@ -281,13 +306,18 @@ export const CatalogPage = () => {
                     Filtros aplicados:
                   </Typography>
                   <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
-                    {onlyInStock && (
+                    {!onlyInStock && (
                       <Chip
-                        label="Solo con stock"
-                        color="success"
+                        label="Incluye sin stock"
+                        color="warning"
                         variant="outlined"
                         size="small"
-                        onDelete={() => setOnlyInStock(false)}
+                        onDelete={() => {
+                          setOnlyInStock(true);
+                          const newParams = new URLSearchParams(searchParams);
+                          newParams.delete("in_stock");
+                          setSearchParams(newParams);
+                        }}
                       />
                     )}
                     {sectionParam && (
@@ -345,7 +375,17 @@ export const CatalogPage = () => {
             }}
           >
             <Typography variant="subtitle2" color="text.secondary">
-              Mostrando <strong>{displayedProducts.length}</strong> de {products.length} instrumentos
+              Mostrando{" "}
+              <strong>
+                {displayedProducts.length > 0
+                  ? `${(currentPage - 1) * ITEMS_PER_PAGE + 1} - ${Math.min(
+                      currentPage * ITEMS_PER_PAGE,
+                      displayedProducts.length
+                    )}`
+                  : 0}
+              </strong>{" "}
+              de {displayedProducts.length} instrumentos
+              {totalPages > 1 && ` (Pág. ${currentPage}/${totalPages})`}
             </Typography>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
@@ -413,20 +453,39 @@ export const CatalogPage = () => {
               </Button>
             </Paper>
           ) : (
-            <Grid container spacing={3}>
-              {displayedProducts.map((product) => (
-                <Grid
-                  key={product.id}
-                  size={{
-                    xs: 12,
-                    sm: viewMode === "grid" ? 6 : 12,
-                    md: viewMode === "grid" ? 4 : 12,
-                  }}
-                >
-                  <ProductCard product={product} />
-                </Grid>
-              ))}
-            </Grid>
+            <>
+              <Grid container spacing={3}>
+                {paginatedProducts.map((product) => (
+                  <Grid
+                    key={product.id}
+                    size={{
+                      xs: 12,
+                      sm: viewMode === "grid" ? 6 : 12,
+                      md: viewMode === "grid" ? 4 : 12,
+                    }}
+                  >
+                    <ProductCard product={product} />
+                  </Grid>
+                ))}
+              </Grid>
+
+              {totalPages > 1 && (
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 5, mb: 2 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={(_, pageNum) => {
+                      setCurrentPage(pageNum);
+                    }}
+                    color="primary"
+                    shape="rounded"
+                    size="large"
+                    showFirstButton
+                    showLastButton
+                  />
+                </Box>
+              )}
+            </>
           )}
         </Grid>
       </Grid>

@@ -71,6 +71,22 @@ export const ProductCard = ({ product }: Props) => {
             backdropFilter: "blur(6px)",
           }}
         />
+        {(inStockStoresCount === 0 || product.minPrice <= 0) && (
+          <Chip
+            label="Agotado"
+            size="small"
+            sx={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              fontWeight: 700,
+              fontSize: "0.7rem",
+              backgroundColor: "rgba(211, 47, 47, 0.85)",
+              color: "#ffffff",
+              backdropFilter: "blur(6px)",
+            }}
+          />
+        )}
       </Box>
 
       {/* Contenido */}
@@ -103,25 +119,26 @@ export const ProductCard = ({ product }: Props) => {
         {/* Info de precios y tiendas */}
         <Box sx={{ mt: "auto" }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-            Desde
+            {inStockStoresCount > 0 && product.minPrice > 0 ? "Desde" : "Disponibilidad"}
           </Typography>
           <Typography
             variant="h5"
             component="div"
             sx={{
               fontWeight: 800,
-              color: "primary.main",
+              color: inStockStoresCount > 0 && product.minPrice > 0 ? "primary.main" : "text.secondary",
               letterSpacing: "-0.5px",
+              fontSize: inStockStoresCount > 0 && product.minPrice > 0 ? "1.45rem" : "1.1rem",
             }}
           >
-            {formatPriceCLP(product.minPrice)}
+            {inStockStoresCount > 0 && product.minPrice > 0 ? formatPriceCLP(product.minPrice) : "Sin stock disponible"}
           </Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mt: 1 }}>
             <StorefrontIcon fontSize="small" sx={{ color: "text.secondary", fontSize: 16 }} />
             <Typography variant="caption" color="text.secondary">
               {product.offers.length} {product.offers.length === 1 ? "tienda" : "tiendas"}
-              {inStockStoresCount > 0 ? ` (${inStockStoresCount} con stock)` : " (sin stock)"}
+              {inStockStoresCount > 0 ? ` (${inStockStoresCount} con stock)` : " (agotado)"}
             </Typography>
           </Box>
         </Box>

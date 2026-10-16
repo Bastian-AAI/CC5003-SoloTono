@@ -13,23 +13,32 @@ import Alert from "@mui/material/Alert";
 import { alpha } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { productService } from "../services/products";
-import type { Product } from "../types/product";
+import { useAuth } from "../hooks/useAuth";
+import type { Product, PriceHistoryPoint } from "../types/product";
 import { StoreOffersList } from "../components/StoreOffersList";
+import { PriceHistoryChart } from "../components/PriceHistoryChart";
 import { formatPriceCLP } from "../utils/format";
 
 export const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [history, setHistory] = useState<PriceHistoryPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [imgError, setImgError] = useState(false);
+  const [failedImgId, setFailedImgId] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
+
+  const imgError = failedImgId === id;
 
   useEffect(() => {
     if (!id) return;
-    setImgError(false);
     let ignore = false;
 
     productService
@@ -48,10 +57,52 @@ export const ProductDetailPage = () => {
         }
       });
 
+    productService
+      .getProductHistory(id)
+      .then((hist) => {
+        if (!ignore) {
+          setHistory(hist);
+        }
+      })
+      .catch((err) => {
+        console.error("Error cargando historial de precios:", err);
+      });
+
+    if (user) {
+      productService
+        .getFavorites()
+        .then((favs) => {
+          if (!ignore) {
+            setIsFavorite(favs.some((f) => f.productId === id));
+          }
+        })
+        .catch(() => undefined);
+    }
+
     return () => {
       ignore = true;
     };
-  }, [id]);
+  }, [id, user]);
+
+  const handleToggleFavorite = async () => {
+    if (!id) return;
+    if (!user) {
+      navigate("/login", { state: { from: `/producto/${id}` } });
+      return;
+    }
+    setFavLoading(true);
+    try {
+      if (isFavorite) {
+        await productService.removeFavorite(id);
+        setIsFavorite(false);
+      } else {
+        await productService.addFavorite({ productId: id });
+        setIsFavorite(true);
+      }
+    } finally {
+      setFavLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -193,7 +244,7 @@ export const ProductDetailPage = () => {
             component="img"
             src={imgError ? "/placeholder-instrument.svg" : product.imageUrl}
             alt={product.name}
-            onError={() => setImgError(true)}
+            onError={() => setFailedImgId(id ?? null)}
             sx={{
               display: "block",
               width: "100%",
@@ -243,19 +294,19 @@ export const ProductDetailPage = () => {
                 color="text.secondary"
                 sx={{ display: "block", lineHeight: 1.2 }}
               >
-                Mejor precio encontrado
+                {inStockStores.length > 0 && product.minPrice > 0 ? "Mejor precio encontrado" : "Disponibilidad"}
               </Typography>
               <Typography
                 component="div"
                 sx={{
-                  fontSize: { xs: "1.6rem", md: "1.9rem" },
+                  fontSize: inStockStores.length > 0 && product.minPrice > 0 ? { xs: "1.6rem", md: "1.9rem" } : { xs: "1.2rem", md: "1.4rem" },
                   fontWeight: 900,
                   lineHeight: 1.2,
-                  color: "primary.main",
+                  color: inStockStores.length > 0 && product.minPrice > 0 ? "primary.main" : "text.secondary",
                   letterSpacing: "-0.5px",
                 }}
               >
-                {formatPriceCLP(product.minPrice)}
+                {inStockStores.length > 0 && product.minPrice > 0 ? formatPriceCLP(product.minPrice) : "Sin stock disponible"}
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
@@ -265,6 +316,17 @@ export const ProductDetailPage = () => {
                 <strong>{inStockStores.length} con stock</strong>)
               </Typography>
             </Box>
+            <Button
+              size="small"
+              variant={isFavorite ? "contained" : "outlined"}
+              color={isFavorite ? "primary" : "inherit"}
+              startIcon={isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+              disabled={favLoading}
+              onClick={handleToggleFavorite}
+              sx={{ ml: "auto", fontWeight: 700 }}
+            >
+              {isFavorite ? "En Favoritos" : "Guardar en Favoritos"}
+            </Button>
           </Paper>
 
         </Box>
@@ -331,6 +393,9 @@ export const ProductDetailPage = () => {
           <StoreOffersList offers={product.offers} />
         </Box>
       </Box>
+
+      {/* Gráfico de evolución e historial de precios (estilo SoloTodo) */}
+      <PriceHistoryChart history={history} />
     </Container>
   );
 };

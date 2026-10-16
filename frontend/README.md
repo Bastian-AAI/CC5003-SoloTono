@@ -1,32 +1,30 @@
-# React + TypeScript + Vite
+# SoloTono - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicacion web SPA desarrollada con React 19, TypeScript, Vite y Material UI (MUI).
 
-Currently, two official plugins are available:
+## Vistas Principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `/` (`HomePage`): Pagina de inicio con instrumentos destacados y navegacion por Mega-Menu.
+- `/catalogo` (`CatalogPage`): Catalogo general con filtros reactivos por seccion, categoria, tienda, disponibilidad de stock, busqueda de texto y ordenamiento.
+- `/producto/:id` (`ProductDetailPage`): Ficha detallada del instrumento con comparativa de precios entre tiendas, grafico de evolucion historica y boton para guardar en favoritos.
+- `/favoritos` (`FavoritesPage`): Vista protegida para usuarios autenticados que permite gestionar instrumentos guardados, notas personales y precios objetivo.
+- `/admin` (`AdminPage`): Vista protegida para usuarios con rol `admin` que permite crear, editar y eliminar productos, tiendas, categorias y gestionar roles de usuarios.
+- `/login` y `/register` (`AuthPages`): Vistas de inicio de sesion y registro de cuentas de usuario.
 
-## React Compiler
+## Comandos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Desde la raiz del monorepo:
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm run dev:frontend
+npm run build:frontend
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+O directamente desde el directorio `frontend/`:
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+```

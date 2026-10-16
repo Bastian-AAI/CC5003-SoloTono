@@ -7,46 +7,64 @@ import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/HomePage";
 import { CatalogPage } from "./pages/CatalogPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
-import { LoginPage, RegisterPage } from './pages/AuthPages'
-import { AuthProvider } from './context/AuthProvider'
-
+import { FavoritesPage } from "./pages/FavoritesPage";
+import { AdminPage } from "./pages/AdminPage";
+import { LoginPage, RegisterPage } from "./pages/AuthPages";
+import { AuthProvider } from "./context/AuthProvider";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
   return (
     <ThemeModeProvider>
       <AuthProvider>
-      <BrowserRouter>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh",
-            bgcolor: "background.default",
-            color: "text.primary",
-          }}
-        >
-          <Navbar />
-
+        <BrowserRouter>
           <Box
-            component="main"
-            sx={(theme) => ({
-              flexGrow: 1,
-              ...getNotebookBackground(theme.palette.mode),
-            })}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
+              bgcolor: "background.default",
+              color: "text.primary",
+            }}
           >
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/catalogo" element={<CatalogPage />} />
-              <Route path="/producto/:id" element={<ProductDetailPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-            </Routes>
-          </Box>
+            <Navbar />
 
-          <Footer />
-        </Box>
-      </BrowserRouter>
+            <Box
+              component="main"
+              sx={(theme) => ({
+                flexGrow: 1,
+                ...getNotebookBackground(theme.palette.mode),
+              })}
+            >
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/catalogo" element={<CatalogPage />} />
+                <Route path="/producto/:id" element={<ProductDetailPage />} />
+                <Route
+                  path="/favoritos"
+                  element={
+                    <ProtectedRoute>
+                      <FavoritesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Box>
+
+            <Footer />
+          </Box>
+        </BrowserRouter>
       </AuthProvider>
     </ThemeModeProvider>
   );

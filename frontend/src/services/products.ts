@@ -1,5 +1,14 @@
 import axios from "axios";
-import type { Product, ProductFilterParams } from "../types/product";
+import axiosSecure from "../utils/axiosSecure";
+import type { User, Role } from "../types";
+import type {
+  Product,
+  ProductFilterParams,
+  PriceHistoryPoint,
+  FavoriteItem,
+  StoreDetail,
+  CategoryDetail,
+} from "../types/product";
 
 const API_BASE_URL = "/api";
 
@@ -48,6 +57,141 @@ export const productService = {
       FALLBACK_PRODUCTS.forEach((p) => p.offers.forEach((o) => stores.add(o.storeName)));
       return Array.from(stores);
     }
+  },
+
+  // Obtener historial de precios del producto
+  getProductHistory: async (id: string): Promise<PriceHistoryPoint[]> => {
+    try {
+      const response = await axios.get<PriceHistoryPoint[]>(
+        `${API_BASE_URL}/products/${id}/history`,
+      );
+      return response.data;
+    } catch {
+      return [];
+    }
+  },
+
+  // --- Favoritos (Rutas protegidas para usuarios autenticados) ---
+  getFavorites: async (): Promise<FavoriteItem[]> => {
+    const response = await axiosSecure.get<FavoriteItem[]>(`${API_BASE_URL}/favorites`);
+    return response.data;
+  },
+
+  addFavorite: async (data: {
+    productId: string;
+    notes?: string;
+    targetPrice?: number | null;
+  }): Promise<FavoriteItem> => {
+    const response = await axiosSecure.post<FavoriteItem>(`${API_BASE_URL}/favorites`, data);
+    return response.data;
+  },
+
+  updateFavorite: async (
+    id: string,
+    data: { notes?: string; targetPrice?: number | null },
+  ): Promise<FavoriteItem> => {
+    const response = await axiosSecure.put<FavoriteItem>(`${API_BASE_URL}/favorites/${id}`, data);
+    return response.data;
+  },
+
+  removeFavorite: async (idOrProductId: string): Promise<void> => {
+    await axiosSecure.delete(`${API_BASE_URL}/favorites/${idOrProductId}`);
+  },
+
+  // --- Panel de Administración CRUD (Rutas protegidas para rol admin) ---
+  createProduct: async (data: {
+    name: string;
+    brand: string;
+    category: string;
+    description?: string;
+    imageUrl?: string;
+  }): Promise<Product> => {
+    const response = await axiosSecure.post<Product>(`${API_BASE_URL}/products`, data);
+    return response.data;
+  },
+
+  updateProduct: async (
+    id: string,
+    data: {
+      name?: string;
+      brand?: string;
+      category?: string;
+      description?: string;
+      imageUrl?: string;
+    },
+  ): Promise<Product> => {
+    const response = await axiosSecure.put<Product>(`${API_BASE_URL}/products/${id}`, data);
+    return response.data;
+  },
+
+  deleteProduct: async (id: string): Promise<void> => {
+    await axiosSecure.delete(`${API_BASE_URL}/products/${id}`);
+  },
+
+  getDetailedStores: async (): Promise<StoreDetail[]> => {
+    const response = await axios.get<StoreDetail[]>(`${API_BASE_URL}/stores?detailed=true`);
+    return response.data;
+  },
+
+  createStore: async (data: {
+    name: string;
+    websiteUrl: string;
+    engineType?: string;
+    isActive?: boolean;
+  }): Promise<StoreDetail> => {
+    const response = await axiosSecure.post<StoreDetail>(`${API_BASE_URL}/stores`, data);
+    return response.data;
+  },
+
+  updateStore: async (
+    id: string,
+    data: { name?: string; websiteUrl?: string; engineType?: string; isActive?: boolean },
+  ): Promise<StoreDetail> => {
+    const response = await axiosSecure.put<StoreDetail>(`${API_BASE_URL}/stores/${id}`, data);
+    return response.data;
+  },
+
+  deleteStore: async (id: string): Promise<void> => {
+    await axiosSecure.delete(`${API_BASE_URL}/stores/${id}`);
+  },
+
+  getDetailedCategories: async (): Promise<CategoryDetail[]> => {
+    const response = await axios.get<CategoryDetail[]>(`${API_BASE_URL}/categories?detailed=true`);
+    return response.data;
+  },
+
+  createCategory: async (data: { name: string; ordering?: number }): Promise<CategoryDetail> => {
+    const response = await axiosSecure.post<CategoryDetail>(`${API_BASE_URL}/categories`, data);
+    return response.data;
+  },
+
+  updateCategory: async (
+    id: string,
+    data: { name?: string; ordering?: number },
+  ): Promise<CategoryDetail> => {
+    const response = await axiosSecure.put<CategoryDetail>(
+      `${API_BASE_URL}/categories/${id}`,
+      data,
+    );
+    return response.data;
+  },
+
+  deleteCategory: async (id: string): Promise<void> => {
+    await axiosSecure.delete(`${API_BASE_URL}/categories/${id}`);
+  },
+
+  getUsers: async (): Promise<User[]> => {
+    const response = await axiosSecure.get<User[]>(`${API_BASE_URL}/users`);
+    return response.data;
+  },
+
+  updateUserRole: async (id: string, role: Role): Promise<User> => {
+    const response = await axiosSecure.put<User>(`${API_BASE_URL}/users/${id}`, { role });
+    return response.data;
+  },
+
+  deleteUser: async (id: string): Promise<void> => {
+    await axiosSecure.delete(`${API_BASE_URL}/users/${id}`);
   },
 };
 

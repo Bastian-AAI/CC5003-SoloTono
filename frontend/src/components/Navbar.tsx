@@ -232,7 +232,7 @@ export const Navbar = () => {
               />
             </SearchBox>
 
-            {/* Toggle Modo Oscuro / Claro */}
+            {/* Toggle Modo Oscuro / Claro y Navegación de Sesión */}
             <Box sx={{ display: "flex", alignItems: "center" }}>
               <Tooltip title={`Cambiar a modo ${mode === "dark" ? "claro" : "oscuro"}`}>
                 <IconButton
@@ -248,42 +248,72 @@ export const Navbar = () => {
                 </IconButton>
               </Tooltip>
               {user ? (
-                <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", gap: 1.5, ml: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  Hola, {user.name || user.username}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  onClick={logout}
-                  sx={{ fontWeight: 600 }}
-                >
-                  Cerrar Sesión
-                </Button>
-              </Box>
+                <Box sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", gap: 1, ml: 1 }}>
+                  <Button
+                    component={RouterLink}
+                    to="/favoritos"
+                    variant="text"
+                    color="inherit"
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Favoritos
+                  </Button>
+                  {(user.role === "admin" || user.role === "moderator") && (
+                    <Button
+                      component={RouterLink}
+                      to="/admin"
+                      variant="text"
+                      color="primary"
+                      sx={{ fontWeight: 700 }}
+                    >
+                      Admin
+                    </Button>
+                  )}
+                  <Typography variant="body2" sx={{ fontWeight: 600, mx: 0.5 }}>
+                    Hola, {user.name || user.username}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={logout}
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Cerrar Sesión
+                  </Button>
+                </Box>
               ) : (
-                <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 1, ml: 1}}>
-                <Button
-                  component={RouterLink}
-                  to="/login"
-                  variant="text"
-                  color="inherit"
-                  sx= {{ fontWeight: 600 }}
-                >
-                  Ingresar
+                <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 1, ml: 1 }}>
+                  <Button
+                    component={RouterLink}
+                    to="/favoritos"
+                    variant="text"
+                    color="inherit"
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Favoritos
+                  </Button>
+                  <Button
+                    component={RouterLink}
+                    to="/login"
+                    variant="text"
+                    color="inherit"
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Ingresar
                   </Button>
                   <Button
                     component={RouterLink}
                     to="/register"
                     variant="contained"
-                    sx={{ fontWeight: 700,
-                          bgcolor: "#ff6f00",
-                          "&:hover": { bgcolor: "#e66400" }
-                     }}
-                     >
-                      Registrarse
-                     </Button>
-              </Box>
+                    sx={{
+                      fontWeight: 700,
+                      bgcolor: "#ff6f00",
+                      "&:hover": { bgcolor: "#e66400" },
+                    }}
+                  >
+                    Registrarse
+                  </Button>
+                </Box>
               )}
             </Box>
           </Toolbar>
@@ -340,47 +370,77 @@ export const Navbar = () => {
           />
         </Box>
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb:2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
           {user ? (
             <>
-            <Typography variant="body2" sx={{ fontWeight: 600, px: 1, py: 0.5 }}>
-              Conectado como: {user.name || user.username}
-            </Typography>
-            <Button
-              variant="outlined"
-              color="error"
-              fullWidth
-              onClick={() => {
-                logout();
-                setMobileDrawerOpen(false);
-              }}
-            >
-              Cerrar Sesión
-            </Button>
-          </>
-          ): (
+              <Typography variant="body2" sx={{ fontWeight: 600, px: 1, py: 0.5 }}>
+                Conectado como: {user.name || user.username}
+              </Typography>
+              <Button
+                component={RouterLink}
+                to="/favoritos"
+                variant="outlined"
+                fullWidth
+                onClick={() => setMobileDrawerOpen(false)}
+              >
+                Mis Favoritos
+              </Button>
+              {(user.role === "admin" || user.role === "moderator") && (
+                <Button
+                  component={RouterLink}
+                  to="/admin"
+                  variant="outlined"
+                  color="primary"
+                  fullWidth
+                  onClick={() => setMobileDrawerOpen(false)}
+                >
+                  Panel de Administración
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                onClick={() => {
+                  logout();
+                  setMobileDrawerOpen(false);
+                }}
+              >
+                Cerrar Sesión
+              </Button>
+            </>
+          ) : (
             <>
-            <Button
-              component={RouterLink}
-              to="/login"
-              variant="outlined"
-              fullWidth
-              startIcon={<LoginIcon />}
-              onClick={() => setMobileDrawerOpen(false)}
-            >
-              Iniciar Sesión
-            </Button>
-            <Button 
-              component={RouterLink}
-              to="/register"
-              variant="contained"
-              fullWidth
-              startIcon={<PersonAddIcon />}
-              onClick={() => setMobileDrawerOpen(false)}
-              sx={{ bgcolor: "#ff6f00", "&:hover": { bgcolor: "#e66400" } }}
-            >
-              Crear Cuenta
-            </Button>
+              <Button
+                component={RouterLink}
+                to="/favoritos"
+                variant="outlined"
+                fullWidth
+                onClick={() => setMobileDrawerOpen(false)}
+              >
+                Favoritos
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/login"
+                variant="outlined"
+                fullWidth
+                startIcon={<LoginIcon />}
+                onClick={() => setMobileDrawerOpen(false)}
+              >
+                Iniciar Sesión
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/register"
+                variant="contained"
+                fullWidth
+                startIcon={<PersonAddIcon />}
+                onClick={() => setMobileDrawerOpen(false)}
+                sx={{ bgcolor: "#ff6f00", "&:hover": { bgcolor: "#e66400" } }}
+              >
+                Crear Cuenta
+              </Button>
             </>
           )}
         </Box>

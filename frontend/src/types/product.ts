@@ -13,7 +13,7 @@ export interface Product {
   name: string;
   brand: string;
   category: string;
-  section?: 'Instrumentos' | 'Piezas y Repuestos' | 'Equipos de sonido' | string;
+  section?: "Instrumentos" | "Piezas y Repuestos" | "Equipos de sonido" | string;
   subCategory?: string;
   imageUrl: string;
   description: string;
@@ -26,5 +26,44 @@ export interface ProductFilterParams {
   section?: string;
   store?: string;
   q?: string;
-  sort?: 'price_asc' | 'price_desc' | 'name_asc' | string;
+  sort?: "price_asc" | "price_desc" | "name_asc" | string;
+  in_stock?: boolean | string;
+}
+
+export interface PriceHistoryPoint {
+  id: number;
+  timestamp: string;
+  inStock: boolean;
+  priceCash: number;
+  priceNormal: number;
+  storeName: string;
+  entityId: string;
+}
+
+export interface FavoriteItem {
+  id: string;
+  userId: string;
+  productId: string;
+  notes: string;
+  targetPrice: number | null;
+  createdAt: string;
+  product: Product | null;
+}
+
+export interface StoreDetail {
+  id: string;
+  name: string;
+  slug: string;
+  websiteUrl: string;
+  scraperClass: string;
+  engineType: string;
+  isActive: boolean;
+}
+
+export interface CategoryDetail {
+  id: string;
+  name: string;
+  slug: string;
+  groupId: number | null;
+  ordering: number;
 }
