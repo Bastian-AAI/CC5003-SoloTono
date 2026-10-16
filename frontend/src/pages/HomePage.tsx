@@ -7,6 +7,7 @@ import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import CircularProgress from "@mui/material/CircularProgress";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import Paper from "@mui/material/Paper";
 import { productService } from "../services/products";
 import type { Product } from "../types/product";
 import { ProductCard } from "../components/ProductCard";
@@ -55,19 +56,6 @@ export const HomePage = () => {
       >
         <Box>
           <Typography
-            variant="overline"
-            sx={{
-              fontWeight: 800,
-              color: "primary.main",
-              letterSpacing: 1.5,
-              display: "block",
-              lineHeight: 1,
-              mb: 0.5,
-            }}
-          >
-            MEJORES OFERTAS
-          </Typography>
-          <Typography
             variant="h4"
             component="h1"
             sx={{ fontWeight: 800, letterSpacing: "-0.5px" }}
@@ -96,6 +84,32 @@ export const HomePage = () => {
         <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
           <CircularProgress color="primary" />
         </Box>
+      ) : featuredProducts.length === 0 ? (
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 6,
+            textAlign: "center",
+            borderRadius: 3,
+            borderColor: "divider",
+          }}
+        >
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
+            No se pudieron cargar los instrumentos destacados
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Puedes explorar directamente el catálogo completo para ver todas las ofertas disponibles.
+          </Typography>
+          <Button
+            component={RouterLink}
+            to="/catalogo"
+            variant="contained"
+            color="primary"
+            endIcon={<ArrowForwardIcon />}
+          >
+            Ir al Catálogo
+          </Button>
+        </Paper>
       ) : (
         <Grid container spacing={3}>
           {featuredProducts.map((product) => (

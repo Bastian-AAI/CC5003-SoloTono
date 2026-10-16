@@ -457,7 +457,7 @@ export const CatalogPage = () => {
                     </Typography>
                   </Box>
                 }
-                sx={{ m: 0 }}
+                sx={{ m: 0, minHeight: 44, py: 0.5, userSelect: "none" }}
               />
 
               {/* Badges de filtros activos */}
@@ -575,6 +575,12 @@ export const CatalogPage = () => {
                 }}
                 size="small"
                 aria-label="modo de vista"
+                sx={{
+                  "& .MuiToggleButton-root": {
+                    minHeight: 40,
+                    minWidth: 40,
+                  },
+                }}
               >
                 <ToggleButton value="grid" aria-label="vista en cuadrícula">
                   <GridViewIcon fontSize="small" />
@@ -585,11 +591,16 @@ export const CatalogPage = () => {
               </ToggleButtonGroup>
 
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography variant="caption" color="text.secondary">
+                <Typography id="catalog-sort-label" variant="caption" color="text.secondary">
                   Ordenar por:
                 </Typography>
                 <FormControl size="small" sx={{ minWidth: 180 }}>
-                  <Select value={sortParam} onChange={handleSortChange}>
+                  <Select
+                    labelId="catalog-sort-label"
+                    value={sortParam}
+                    onChange={handleSortChange}
+                    inputProps={{ "aria-label": "Ordenar catálogo de instrumentos" }}
+                  >
                     <MenuItem value="price_asc">Menor precio primero</MenuItem>
                     <MenuItem value="price_desc">Mayor precio primero</MenuItem>
                     <MenuItem value="name_asc">Nombre (A-Z)</MenuItem>
@@ -653,6 +664,7 @@ export const CatalogPage = () => {
                     page={currentPage}
                     onChange={(_, pageNum) => {
                       setCurrentPage(pageNum);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     color="primary"
                     shape="rounded"

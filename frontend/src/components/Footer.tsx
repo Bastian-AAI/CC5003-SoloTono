@@ -3,6 +3,7 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import Link from "@mui/material/Link";
+import { Link as RouterLink } from "react-router-dom";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 
 export const Footer = () => {
@@ -10,7 +11,8 @@ export const Footer = () => {
     <Box
       component="footer"
       sx={{
-        py: 5,
+        pt: 5,
+        pb: "calc(40px + env(safe-area-inset-bottom, 0px))",
         mt: "auto",
         // Un gris un poco más oscuro que el fondo cuadriculado de la página
         // (claro: #f7f6f2, oscuro: #0b0b0d; ver getNotebookBackground en theme.ts)
@@ -55,10 +57,23 @@ export const Footer = () => {
             borderColor: "divider",
           }}
         >
-          <Link href="https://github.com" target="_blank" color="text.secondary" underline="hover" variant="caption">
+          <Link
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="text.secondary"
+            underline="hover"
+            variant="caption"
+          >
             GitHub
           </Link>
-          <Link href="/catalogo" color="text.secondary" underline="hover" variant="caption">
+          <Link
+            component={RouterLink}
+            to="/catalogo"
+            color="text.secondary"
+            underline="hover"
+            variant="caption"
+          >
             Catálogo
           </Link>
           <Typography variant="caption" color="text.secondary">

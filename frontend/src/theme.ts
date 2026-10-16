@@ -72,22 +72,50 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
             borderRadius: 10,
             padding: "8px 18px",
             boxShadow: "none",
-            "&:hover": {
-              boxShadow: "0 4px 12px rgba(255, 111, 0, 0.25)",
+            transition: "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease, box-shadow 140ms ease",
+            "@media (hover: hover) and (pointer: fine)": {
+              "&:hover": {
+                boxShadow: "0 4px 12px rgba(255, 111, 0, 0.25)",
+              },
+            },
+            "&:active:not(:disabled)": {
+              transform: "scale(0.97)",
             },
           },
           // Botones con contorno: fondo sólido para que no se vea la cuadrícula
           // de la página por debajo.
           outlined: ({ theme }) => ({
             backgroundColor: theme.palette.background.paper,
-            "&:hover": {
-              // MUI pinta el hover con un tinte translúcido; lo ponemos como
-              // capa encima del fondo sólido para que siga siendo opaco.
-              backgroundColor: theme.palette.background.paper,
-              backgroundImage:
-                "linear-gradient(color-mix(in srgb, currentColor 6%, transparent), color-mix(in srgb, currentColor 6%, transparent))",
+            "@media (hover: hover) and (pointer: fine)": {
+              "&:hover": {
+                backgroundColor: theme.palette.background.paper,
+                backgroundImage:
+                  "linear-gradient(color-mix(in srgb, currentColor 6%, transparent), color-mix(in srgb, currentColor 6%, transparent))",
+              },
             },
           }),
+        },
+      },
+      MuiIconButton: {
+        styleOverrides: {
+          root: {
+            transition: "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease",
+            "&:active": {
+              transform: "scale(0.92)",
+            },
+          },
+        },
+      },
+      MuiToggleButton: {
+        styleOverrides: {
+          root: {
+            minHeight: 40,
+            minWidth: 40,
+            transition: "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease",
+            "&:active": {
+              transform: "scale(0.95)",
+            },
+          },
         },
       },
       // Chips con contorno (p. ej. filtros activos del catálogo): mismo criterio.
@@ -104,12 +132,17 @@ export const getAppTheme = (mode: "light" | "dark"): Theme => {
             borderRadius: 14,
             backgroundImage: "none",
             border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(0, 0, 0, 0.08)",
-            transition: "transform 0.2s ease, box-shadow 0.2s ease",
-            "&:hover": {
-              transform: "translateY(-4px)",
-              boxShadow: isDark 
-                ? "0 12px 24px -10px rgba(0, 0, 0, 0.6)" 
-                : "0 12px 24px -10px rgba(0, 0, 0, 0.12)",
+            transition: "transform 200ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1), border-color 200ms ease",
+            "@media (hover: hover) and (pointer: fine)": {
+              "&:hover": {
+                transform: "translateY(-4px)",
+                boxShadow: isDark 
+                  ? "0 12px 24px -10px rgba(0, 0, 0, 0.6)" 
+                  : "0 12px 24px -10px rgba(0, 0, 0, 0.12)",
+              },
+            },
+            "&:active": {
+              transform: "scale(0.99)",
             },
           },
         },

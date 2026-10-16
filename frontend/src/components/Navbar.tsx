@@ -67,7 +67,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   width: "100%",
   "& .MuiInputBase-input": {
     padding: theme.spacing(0.8, 1, 0.8, 0),
-    fontSize: "0.9rem",
+    fontSize: "1rem", // 16px mínimo para evitar zoom en iOS Safari
   },
 }));
 
@@ -111,7 +111,7 @@ export const Navbar = () => {
 
   return (
     <Box sx={{ position: "sticky", top: 0, zIndex: 1100 }}>
-      <AppBar position="static">
+      <AppBar position="static" sx={{ pt: "env(safe-area-inset-top, 0px)" }}>
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: "space-between", py: 1 }}>
             {/* Botón Hamburger para Móviles */}
@@ -144,12 +144,14 @@ export const Navbar = () => {
                   width: 38,
                   height: 38,
                   borderRadius: "10px",
-                  background: "linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%)",
+                  background: (theme) =>
+                    `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#ffffff",
-                  boxShadow: "0 4px 10px rgba(255, 111, 0, 0.35)",
+                  boxShadow: (theme) =>
+                    `0 4px 10px ${alpha(theme.palette.primary.main, 0.35)}`,
                 }}
               >
                 <MusicNoteIcon />
@@ -164,7 +166,7 @@ export const Navbar = () => {
                     letterSpacing: "-0.5px",
                   }}
                 >
-                  Solo<span style={{ color: "#ff6f00" }}>Tono</span>
+                  Solo<Box component="span" sx={{ color: "primary.main" }}>Tono</Box>
                 </Typography>
                 <Typography
                   variant="caption"
@@ -311,10 +313,9 @@ export const Navbar = () => {
                     component={RouterLink}
                     to="/register"
                     variant="contained"
+                    color="primary"
                     sx={{
                       fontWeight: 700,
-                      bgcolor: "#ff6f00",
-                      "&:hover": { bgcolor: "#e66400" },
                     }}
                   >
                     Registrarse
@@ -337,10 +338,21 @@ export const Navbar = () => {
         anchor="left"
         open={mobileDrawerOpen}
         onClose={() => setMobileDrawerOpen(false)}
+        transitionDuration={{ enter: 260, exit: 200 }}
+        slotProps={{
+          transition: {
+            easing: {
+              enter: "cubic-bezier(0.32, 0.72, 0, 1)",
+              exit: "cubic-bezier(0.23, 1, 0.32, 1)",
+            },
+          },
+        }}
         sx={{
           "& .MuiDrawer-paper": {
             width: 310,
             p: 2,
+            pt: "calc(16px + env(safe-area-inset-top, 0px))",
+            pb: "calc(16px + env(safe-area-inset-bottom, 0px))",
             boxSizing: "border-box",
           },
         }}
@@ -349,10 +361,10 @@ export const Navbar = () => {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <MusicNoteIcon sx={{ color: "primary.main" }} />
             <Typography variant="h6" sx={{ fontWeight: 800 }}>
-              Solo<span style={{ color: "#ff6f00" }}>Tono</span>
+              Solo<Box component="span" sx={{ color: "primary.main" }}>Tono</Box>
             </Typography>
           </Box>
-          <IconButton onClick={() => setMobileDrawerOpen(false)} size="small">
+          <IconButton onClick={() => setMobileDrawerOpen(false)} size="small" aria-label="cerrar menú">
             <CloseIcon />
           </IconButton>
         </Box>
@@ -363,6 +375,7 @@ export const Navbar = () => {
         <Box component="form" onSubmit={handleSearchSubmit} sx={{ mb: 2 }}>
           <StyledInputBase
             placeholder="Buscar en catálogo..."
+            inputProps={{ "aria-label": "Buscar en catálogo" }}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{
@@ -440,10 +453,11 @@ export const Navbar = () => {
                 component={RouterLink}
                 to="/register"
                 variant="contained"
+                color="primary"
                 fullWidth
                 startIcon={<PersonAddIcon />}
                 onClick={() => setMobileDrawerOpen(false)}
-                sx={{ bgcolor: "#ff6f00", "&:hover": { bgcolor: "#e66400" } }}
+                sx={{ fontWeight: 700 }}
               >
                 Crear Cuenta
               </Button>

@@ -179,6 +179,11 @@ export const FavoritesPage = () => {
                         component="img"
                         src={product.imageUrl || "/placeholder-instrument.svg"}
                         alt={product.name}
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                          e.currentTarget.src = "/placeholder-instrument.svg";
+                        }}
                         sx={{
                           width: 96,
                           height: 96,

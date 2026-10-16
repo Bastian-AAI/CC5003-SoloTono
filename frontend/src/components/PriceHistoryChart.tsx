@@ -201,7 +201,12 @@ export const PriceHistoryChart = ({ history }: Props) => {
           onClick={() => setSelectedStore(null)}
           variant={selectedStore === null ? "filled" : "outlined"}
           color={selectedStore === null ? "primary" : "default"}
-          sx={{ fontWeight: 700, fontSize: "0.72rem" }}
+          sx={{
+            fontWeight: 700,
+            fontSize: "0.72rem",
+            transition: "transform 120ms cubic-bezier(0.23, 1, 0.32, 1), background-color 120ms ease",
+            "&:active": { transform: "scale(0.95)" },
+          }}
         />
         {stores.map((store) => {
           const color = storeColorMap.get(store) || "#666";
@@ -219,7 +224,11 @@ export const PriceHistoryChart = ({ history }: Props) => {
                 borderColor: color,
                 color: isSelected ? "#fff" : color,
                 bgcolor: isSelected ? color : "transparent",
-                "&:hover": { bgcolor: alpha(color, 0.15) },
+                transition: "transform 120ms cubic-bezier(0.23, 1, 0.32, 1), background-color 120ms ease",
+                "@media (hover: hover) and (pointer: fine)": {
+                  "&:hover": { bgcolor: alpha(color, 0.15) },
+                },
+                "&:active": { transform: "scale(0.95)" },
               }}
             />
           );
@@ -228,15 +237,24 @@ export const PriceHistoryChart = ({ history }: Props) => {
 
       {/* SVG Interactivo */}
       <Box
+        role="region"
+        aria-label="Gráfico interactivo de evolución de precios"
+        tabIndex={0}
         sx={{
           width: "100%",
           overflowX: "auto",
           bgcolor: alpha(theme.palette.background.default, 0.5),
           borderRadius: "8px",
           p: 1,
+          "&:focus-visible": {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: "2px",
+          },
         }}
       >
         <svg
+          role="img"
+          aria-label="Evolución histórica de precios por tienda"
           viewBox={`0 0 ${width} ${height}`}
           style={{ width: "100%", height: "auto", display: "block", minWidth: 460 }}
         >
@@ -328,15 +346,30 @@ export const PriceHistoryChart = ({ history }: Props) => {
                       }
                       arrow
                     >
-                      <circle
-                        cx={cx}
-                        cy={cy}
-                        r="5"
-                        fill={color}
-                        stroke="#fff"
-                        strokeWidth="2"
-                        style={{ cursor: "pointer", transition: "r 0.2s" }}
-                      />
+                      <g
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`${store}: ${formatPriceCLP(price)}, fecha: ${dateStr}, ${pt.inStock ? "en stock" : "agotado"}`}
+                        style={{ cursor: "pointer", outline: "none" }}
+                      >
+                        {/* Área táctil invisible de 36px de diámetro para móviles */}
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r="18"
+                          fill="transparent"
+                        />
+                        {/* Círculo visual nítido */}
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r="5"
+                          fill={color}
+                          stroke="#fff"
+                          strokeWidth="2"
+                          style={{ transition: "r 0.2s" }}
+                        />
+                      </g>
                     </Tooltip>
                   );
                 })}

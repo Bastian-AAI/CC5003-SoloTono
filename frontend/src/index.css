@@ -1,14 +1,87 @@
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
 html,
 body,
 #root {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   display: flex;
   flex-direction: column;
+  font-variant-numeric: tabular-nums;
 }
 
 * {
   box-sizing: border-box;
+}
+
+::selection {
+  background-color: rgba(255, 111, 0, 0.28);
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  caret-color: #ff6f00;
+}
+
+/* Evitar zoom forzado de iOS Safari en campos de texto en dispositivos táctiles */
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select,
+  .MuiInputBase-input {
+    font-size: 16px !important;
+  }
+}
+
+/* Feedback táctil responsivo y prevención de selección involuntaria en controles */
+button,
+a,
+[role="button"],
+[role="link"],
+.MuiButton-root,
+.MuiIconButton-root,
+.MuiToggleButton-root {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+:focus-visible {
+  outline: 2px solid #ff6f00;
+  outline-offset: 2px;
+}
+
+/* Scrollbars modernos coherentes con el tema */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.25);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 111, 0, 0.5);
 }

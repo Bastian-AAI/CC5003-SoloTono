@@ -29,6 +29,16 @@ export const ProductCard = ({ product }: Props) => {
 
   return (
     <Card
+      role="link"
+      tabIndex={0}
+      aria-label={`Ver ofertas de ${product.name}`}
+      onClick={handleGoToDetail}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleGoToDetail();
+        }
+      }}
       sx={{
         height: "100%",
         display: "flex",
@@ -36,15 +46,28 @@ export const ProductCard = ({ product }: Props) => {
         cursor: "pointer",
         position: "relative",
         overflow: "hidden",
+        "&:focus-visible": {
+          outline: (theme) => `2px solid ${theme.palette.primary.main}`,
+          outlineOffset: "2px",
+        },
       }}
-      onClick={handleGoToDetail}
     >
-      {/* Imagen del producto */}
-      <Box sx={{ position: "relative", pt: "70%", backgroundColor: "action.hover" }}>
+      {/* Imagen del producto con fondo blanco para imágenes extraídas */}
+      <Box
+        sx={{
+          position: "relative",
+          pt: "70%",
+          bgcolor: "#ffffff",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
         <CardMedia
           component="img"
           image={imgError ? "/placeholder-instrument.svg" : product.imageUrl}
           alt={product.name}
+          loading="lazy"
+          decoding="async"
           onError={() => setImgError(true)}
           sx={{
             position: "absolute",
@@ -151,6 +174,8 @@ export const ProductCard = ({ product }: Props) => {
           variant="outlined"
           color="primary"
           endIcon={<ArrowForwardIcon />}
+          tabIndex={-1}
+          aria-hidden="true"
           onClick={(e) => {
             e.stopPropagation();
             handleGoToDetail();

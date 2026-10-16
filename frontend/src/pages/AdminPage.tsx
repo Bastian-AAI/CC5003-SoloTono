@@ -409,7 +409,7 @@ export const AdminPage = () => {
                   </Box>
 
                   <TableContainer>
-                    <Table size="small">
+                    <Table size="small" sx={{ minWidth: 620 }}>
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
@@ -438,7 +438,7 @@ export const AdminPage = () => {
                               <IconButton
                                 size="small"
                                 color="primary"
-                                aria-label="editar producto"
+                                aria-label={`Editar producto ${p.name}`}
                                 onClick={() => handleEditProduct(p)}
                               >
                                 <EditOutlinedIcon fontSize="small" />
@@ -446,7 +446,7 @@ export const AdminPage = () => {
                               <IconButton
                                 size="small"
                                 color="error"
-                                aria-label="eliminar producto"
+                                aria-label={`Eliminar producto ${p.name}`}
                                 onClick={() => handleDeleteProduct(p.id)}
                               >
                                 <DeleteOutlineIcon fontSize="small" />
@@ -524,7 +524,7 @@ export const AdminPage = () => {
                   </Box>
 
                   <TableContainer>
-                    <Table size="small">
+                    <Table size="small" sx={{ minWidth: 580 }}>
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
@@ -555,6 +555,7 @@ export const AdminPage = () => {
                               <IconButton
                                 size="small"
                                 color="primary"
+                                aria-label={`Editar tienda ${s.name}`}
                                 onClick={() => handleEditStore(s)}
                               >
                                 <EditOutlinedIcon fontSize="small" />
@@ -562,6 +563,7 @@ export const AdminPage = () => {
                               <IconButton
                                 size="small"
                                 color="error"
+                                aria-label={`Eliminar tienda ${s.name}`}
                                 onClick={() => handleDeleteStore(s.id)}
                               >
                                 <DeleteOutlineIcon fontSize="small" />
@@ -619,7 +621,7 @@ export const AdminPage = () => {
                   </Box>
 
                   <TableContainer>
-                    <Table size="small">
+                    <Table size="small" sx={{ minWidth: 500 }}>
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
@@ -642,6 +644,7 @@ export const AdminPage = () => {
                               <IconButton
                                 size="small"
                                 color="primary"
+                                aria-label={`Editar categoría ${c.name}`}
                                 onClick={() => {
                                   setEditingCategoryId(c.id);
                                   setCatName(c.name);
@@ -653,6 +656,7 @@ export const AdminPage = () => {
                               <IconButton
                                 size="small"
                                 color="error"
+                                aria-label={`Eliminar categoría ${c.name}`}
                                 onClick={() => handleDeleteCategory(c.id)}
                               >
                                 <DeleteOutlineIcon fontSize="small" />
@@ -669,7 +673,7 @@ export const AdminPage = () => {
               {/* TAB 3: USUARIOS */}
               {tab === 3 && (
                 <TableContainer>
-                  <Table size="small">
+                  <Table size="small" sx={{ minWidth: 550 }}>
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
@@ -691,6 +695,7 @@ export const AdminPage = () => {
                             <Select
                               size="small"
                               value={u.role}
+                              inputProps={{ "aria-label": `Rol para usuario ${u.username}` }}
                               onChange={(e) => handleRoleChange(u.id, e.target.value as Role)}
                               sx={{ minWidth: 130, fontSize: "0.85rem" }}
                             >
@@ -703,6 +708,7 @@ export const AdminPage = () => {
                             <IconButton
                               size="small"
                               color="error"
+                              aria-label={`Eliminar usuario ${u.username}`}
                               disabled={u.username === "admin"}
                               onClick={() => handleDeleteUser(u.id)}
                             >

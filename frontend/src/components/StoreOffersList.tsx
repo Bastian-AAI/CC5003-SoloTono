@@ -92,15 +92,15 @@ export const StoreOffersList = ({ offers }: Props) => {
                 })}
               >
                 <ButtonBase
-                  component="a"
+                  component={offer.inStock ? "a" : "div"}
                   href={offer.inStock ? offer.productUrl : undefined}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  disabled={!offer.inStock}
+                  target={offer.inStock ? "_blank" : undefined}
+                  rel={offer.inStock ? "noopener noreferrer" : undefined}
+                  aria-disabled={!offer.inStock}
                   aria-label={
                     offer.inStock
                       ? `Ir a ${offer.storeName} (se abre en una pestaña nueva)`
-                      : `${offer.storeName}: sin stock`
+                      : `${offer.storeName}: sin stock disponible`
                   }
                   sx={{
                     display: "block",
@@ -110,7 +110,14 @@ export const StoreOffersList = ({ offers }: Props) => {
                     py: 1.25,
                     // Las tiendas sin stock se atenúan solo en su contenido
                     opacity: offer.inStock ? 1 : 0.7,
-                    "&:hover": { bgcolor: "action.hover" },
+                    cursor: offer.inStock ? "pointer" : "default",
+                    transition: "transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease",
+                    "@media (hover: hover) and (pointer: fine)": {
+                      "&:hover": { bgcolor: offer.inStock ? "action.hover" : "transparent" },
+                    },
+                    "&:active": {
+                      transform: offer.inStock ? "scale(0.985)" : "none",
+                    },
                   }}
                 >
                   {/* Fila superior: tienda, badge y stock */}

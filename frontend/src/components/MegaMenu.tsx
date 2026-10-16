@@ -95,10 +95,13 @@ export const MegaMenu = ({ section, onClose }: Props) => {
             theme.palette.mode === "dark"
               ? "0 20px 30px rgba(0, 0, 0, 0.7)"
               : "0 20px 30px rgba(0, 0, 0, 0.12)",
-          animation: "fadeInDown 0.18s ease-out",
+          animation: "fadeInDown 180ms cubic-bezier(0.23, 1, 0.32, 1)",
           "@keyframes fadeInDown": {
-            from: { opacity: 0, transform: "translateY(-6px)" },
-            to: { opacity: 1, transform: "translateY(0)" },
+            from: { opacity: 0, transform: "translateY(-6px) scale(0.99)" },
+            to: { opacity: 1, transform: "translateY(0) scale(1)" },
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            animation: "none",
           },
         }}
       >
@@ -183,7 +186,7 @@ export const MegaMenu = ({ section, onClose }: Props) => {
                 {/* Lista de tipos de instrumentos / partes */}
                 <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0 }}>
                   {col.items.map((item) => (
-                    <Box component="li" key={item.title} sx={{ mb: 1 }}>
+                    <Box component="li" key={item.title} sx={{ mb: 0.5 }}>
                       <Link
                         component="button"
                         type="button"
@@ -194,6 +197,9 @@ export const MegaMenu = ({ section, onClose }: Props) => {
                           fontSize: "0.86rem",
                           textAlign: "left",
                           fontWeight: 500,
+                          py: 0.5,
+                          display: "inline-block",
+                          minHeight: 28,
                           transition: "color 0.15s ease",
                           "&:hover": {
                             color: "primary.main",

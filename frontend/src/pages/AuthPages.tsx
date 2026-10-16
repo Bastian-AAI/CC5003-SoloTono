@@ -7,7 +7,9 @@ import {
   Typography,
   Alert,
   Paper,
+  Link,
 } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import MusicNoteIcon from '@mui/icons-material/MusicNote'
 import axios from 'axios'
 import { useAuth } from '../hooks/useAuth'
@@ -68,19 +70,21 @@ export function LoginPage() {
               width: 48,
               height: 48,
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%)',
+              background: (theme) =>
+                `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#ffffff',
-              boxShadow: '0 4px 10px rgba(255, 111, 0, 0.35)',
+              boxShadow: (theme) =>
+                `0 4px 10px ${alpha(theme.palette.primary.main, 0.35)}`,
               mb: 1.5,
             }}
           >
             <MusicNoteIcon fontSize="large" />
           </Box>
           <Typography variant="h5" component="h1" sx={{ fontWeight: 800 }}>
-            Solo<span style={{ color: '#ff6f00' }}>Tono</span>
+            Solo<Box component="span" sx={{ color: 'primary.main' }}>Tono</Box>
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Inicia sesión para comparar precios
@@ -115,13 +119,12 @@ export function LoginPage() {
           <Button
             type="submit"
             variant="contained"
+            color="primary"
             disabled={submitting}
             fullWidth
             sx={{
               py: 1.2,
               fontWeight: 700,
-              bgcolor: '#ff6f00',
-              '&:hover': { bgcolor: '#e66400' },
               mt: 1,
             }}
           >
@@ -130,9 +133,21 @@ export function LoginPage() {
 
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
             ¿No tienes cuenta?{' '}
-            <RouterLink to="/register" style={{ color: '#ff6f00', textDecoration: 'none', fontWeight: 600 }}>
+            <Link
+              component={RouterLink}
+              to="/register"
+              color="primary"
+              underline="hover"
+              sx={{
+                fontWeight: 600,
+                display: "inline-flex",
+                alignItems: "center",
+                minHeight: 44,
+                px: 1,
+              }}
+            >
               Regístrate
-            </RouterLink>
+            </Link>
           </Typography>
         </Box>
       </Paper>
@@ -180,12 +195,14 @@ export function RegisterPage() {
               width: 48,
               height: 48,
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%)',
+              background: (theme) =>
+                `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#ffffff',
-              boxShadow: '0 4px 10px rgba(255, 111, 0, 0.35)',
+              boxShadow: (theme) =>
+                `0 4px 10px ${alpha(theme.palette.primary.main, 0.35)}`,
               mb: 1.5,
             }}
           >
@@ -234,13 +251,12 @@ export function RegisterPage() {
           <Button
             type="submit"
             variant="contained"
+            color="primary"
             disabled={submitting}
             fullWidth
             sx={{
               py: 1.2,
               fontWeight: 700,
-              bgcolor: '#ff6f00',
-              '&:hover': { bgcolor: '#e66400' },
               mt: 1,
             }}
           >
@@ -249,9 +265,21 @@ export function RegisterPage() {
 
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
             ¿Ya tienes cuenta?{' '}
-            <RouterLink to="/login" style={{ color: '#ff6f00', textDecoration: 'none', fontWeight: 600 }}>
+            <Link
+              component={RouterLink}
+              to="/login"
+              color="primary"
+              underline="hover"
+              sx={{
+                fontWeight: 600,
+                display: "inline-flex",
+                alignItems: "center",
+                minHeight: 44,
+                px: 1,
+              }}
+            >
               Inicia sesión
-            </RouterLink>
+            </Link>
           </Typography>
         </Box>
       </Paper>
